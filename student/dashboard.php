@@ -116,6 +116,21 @@ $recent_results = $conn->query("
     LIMIT 5
 ");
 
+// Prepare GPA Trend Chart Data
+$chart_labels = [];
+$chart_data = [];
+if (!empty($grouped_resultsByYear)) {
+    // Sort years ascending for the chart
+    $years_sorted = array_keys($grouped_resultsByYear);
+    sort($years_sorted);
+    foreach ($years_sorted as $year) {
+        foreach ($grouped_resultsByYear[$year] as $term => $data) {
+            $chart_labels[] = $year . ' T' . $term;
+            $chart_data[] = $data['total_credits'] > 0 ? round($data['total_grade_points'] / $data['total_credits'], 2) : 0;
+        }
+    }
+}
+
 $conn->close();
 
 $page_title = "Student Dashboard";
@@ -123,373 +138,440 @@ $page_scripts = ['student/dashboard.js'];
 include '../includes/header.php';
 ?>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-[#f8fafc]">
     <!-- Student Header -->
-    <div class="bg-white shadow">
+    <div class="glass-header sticky top-0 z-30 mb-8 border-b border-white/20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-6">
-                <div class="flex items-center">
-                    <div class="bg-blue-100 p-3 rounded-full">
-                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
+            <div class="flex flex-col md:flex-row justify-between items-center py-8 gap-6">
+                <div class="flex items-center group">
+                    <div class="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform duration-500">
+                        <i class="fas fa-user-graduate text-white text-2xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <h1 class="text-2xl font-bold text-gray-900">Welcome, <?php echo $student['name']; ?></h1>
-                        <p class="text-gray-600">
-                            <?php echo $student['reg_no']; ?> • <?php echo $student['class_level']; ?>
+                    <div class="ml-6 text-left">
+                        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Welcome, <?php echo htmlspecialchars($student['name']); ?></h1>
+                        <p class="text-slate-500 font-medium flex items-center gap-2 mt-1">
+                            <span class="bg-white/50 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase border border-white/50"><?php echo htmlspecialchars($student['reg_no']); ?></span>
+                            <span class="text-slate-300">•</span>
+                            <span class="text-sm font-bold text-blue-600 uppercase tracking-widest"><?php echo htmlspecialchars($student['class_level']); ?></span>
                             <?php if ($student['stream']): ?>
-                                • <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><?php echo $student['stream']; ?> Stream</span>
+                                <span class="text-slate-300">•</span>
+                                <span class="status-badge-premium bg-blue-100 text-blue-800 text-[10px]"><?php echo htmlspecialchars($student['stream']); ?> Stream</span>
                             <?php endif; ?>
                         </p>
                     </div>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm text-gray-500">Current CGPA</p>
-                    <p class="text-3xl font-bold text-blue-600"><?php echo formatGPA($cgpa); ?></p>
+                <div class="text-right bg-white/80 backdrop-blur-xl p-6 rounded-[2rem] border border-white shadow-xl flex items-center gap-6">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Cumulative GPA</p>
+                        <p class="text-4xl font-black text-slate-900"><?php echo formatGPA($cgpa); ?></p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin-slow"></div>
                 </div>
             </div>
-            
-            <?php 
-            // Stream Selection for eligible students if not yet selected
-            if ($can_choose_stream && empty($student['stream'])): 
-            ?>
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-md">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium text-blue-800">Select Your Academic Stream</h3>
-                        <div class="mt-2 text-sm text-blue-700">
-                            <?php if ($student['class_level'] === 'Form 2'): ?>
-                                <p>Congratulations on passing Form 2! Please choose your academic track for Form 3.</p>
-                            <?php else: ?>
-                                <p>Please choose your academic track to see relevant subjects and assignments.</p>
-                            <?php endif; ?>
-                        </div>
-                        <form action="select_stream.php" method="POST" class="mt-4 flex flex-wrap gap-4">
-                            <button type="submit" name="stream" value="General" class="bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-md hover:bg-blue-100 transition duration-150">General</button>
-                            <button type="submit" name="stream" value="Science" class="bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-md hover:bg-blue-100 transition duration-150">Science</button>
-                            <button type="submit" name="stream" value="Arts" class="bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-md hover:bg-blue-100 transition duration-150">Arts</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
         </div>
     </div>
-    <!-- Avatar upload form -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 flex items-center justify-between">
-        <form action="../includes/upload_avatar.php" method="post" enctype="multipart/form-data" class="flex items-center space-x-3">
-            <label class="text-sm text-gray-700">Change profile picture:</label>
-            <input type="file" name="avatar" accept="image/*" required />
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm">Upload</button>
-        </form>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <!-- Dashboard Content -->
         
-        <?php if (isset($_SESSION['success_msg'])): ?>
-            <span class="text-green-600 text-sm font-medium"><?php echo $_SESSION['success_msg']; unset($_SESSION['success_msg']); ?></span>
-        <?php endif; ?>
-    </div>
-
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="px-4 py-6 sm:px-0">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Statistics Cards with Progress Charts -->
-                <?php 
-                $subjects_count = 0;
-                foreach ($grouped_resultsByClass as $class => $years) {
-                    foreach ($years as $year => $terms) {
-                        foreach ($terms as $term_data) {
-                            $subjects_count += count($term_data['subjects']);
-                        }
-                    }
-                }
-                $total_terms = 0;
-                foreach ($grouped_resultsByYear as $terms) {
-                    $total_terms += count($terms);
-                }
-                // Expected maximums for progress calculations
-                $is_highschool = strpos($student['class_level'], 'Form') !== false || $student['class_level'] === 'Graduated';
-                $expected_subjects = $is_highschool ? 44 : 30; // 11 sub x 4 yrs vs 7.5 sub x 4 yrs
-                $expected_terms = 8;    // 2 terms x 4 years
-                $expected_credits = $is_highschool ? 132 : 100; // ~33 per year vs ~25 per year
-                ?>
-                
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Subjects Completed</dt>
-                                <dd class="mt-1 text-3xl font-semibold text-gray-900"><?php echo $subjects_count; ?></dd>
-                                <dd class="text-xs text-gray-400">of ~<?php echo $expected_subjects; ?> expected</dd>
-                            </div>
-                            <div class="relative w-16 h-16">
-                                <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-                                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="3"></circle>
-                                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#10b981" stroke-width="3" 
-                                        stroke-dasharray="<?php echo min(100, ($subjects_count / $expected_subjects) * 100); ?>, 100"
-                                        stroke-linecap="round"></circle>
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <span class="text-sm font-medium text-green-600"><?php echo min(100, round(($subjects_count / $expected_subjects) * 100)); ?>%</span>
-                                </div>
-                            </div>
-                        </div>
+        <?php 
+        // Stream Selection for eligible students if not yet selected
+        if ($can_choose_stream && empty($student['stream'])): 
+        ?>
+        <div class="dashboard-card !bg-blue-600 text-white mb-12 relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <i class="fas fa-route text-white"></i>
                     </div>
+                    <h3 class="text-xl font-black tracking-tight">Select Your Academic Stream</h3>
                 </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Terms Completed</dt>
-                                <dd class="mt-1 text-3xl font-semibold text-gray-900"><?php echo $total_terms; ?></dd>
-                                <dd class="text-xs text-gray-400">of <?php echo $expected_terms; ?> total</dd>
-                            </div>
-                            <div class="relative w-16 h-16">
-                                <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-                                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="3"></circle>
-                                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#3b82f6" stroke-width="3" 
-                                        stroke-dasharray="<?php echo min(100, ($total_terms / $expected_terms) * 100); ?>, 100"
-                                        stroke-linecap="round"></circle>
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <span class="text-sm font-medium text-blue-600"><?php echo min(100, round(($total_terms / $expected_terms) * 100)); ?>%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Credits</dt>
-                                <dd class="mt-1 text-3xl font-semibold text-gray-900"><?php echo $total_credits; ?></dd>
-                                <dd class="text-xs text-gray-400">of ~<?php echo $expected_credits; ?> expected</dd>
-                            </div>
-                            <div class="relative w-16 h-16">
-                                <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-                                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="3"></circle>
-                                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#8b5cf6" stroke-width="3" 
-                                        stroke-dasharray="<?php echo min(100, ($total_credits / $expected_credits) * 100); ?>, 100"
-                                        stroke-linecap="round"></circle>
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <span class="text-sm font-medium text-purple-600"><?php echo min(100, round(($total_credits / $expected_credits) * 100)); ?>%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Recent Results -->
-                <div class="bg-white shadow rounded-lg">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Recent Results</h3>
-                    </div>
-                    <div class="overflow-hidden">
-                        <?php if ($recent_results->num_rows > 0): ?>
-                        <ul class="divide-y divide-gray-200">
-                            <?php while($result = $recent_results->fetch_assoc()): ?>
-                            <li class="px-6 py-4">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <span class="text-sm font-medium text-blue-600"><?php echo $result['grade']; ?></span>
-                                            </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900"><?php echo $result['subject_name']; ?></div>
-                                            <div class="text-sm text-gray-500"><?php echo $result['subject_code']; ?> • Term <?php echo $result['term'] ?? ''; ?></div>
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="text-sm font-medium text-gray-900"><?php echo $result['marks_obtained']; ?>%</div>
-                                        <div class="text-sm text-gray-500">GP: <?php echo $result['grade_point']; ?></div>
-                                    </div>
-                                </div>
-                            </li>
-                            <?php endwhile; ?>
-                        </ul>
-                        <?php else: ?>
-                        <div class="text-center py-8">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No results available</h3>
-                            <p class="mt-1 text-sm text-gray-500">Your results will appear here once they are published.</p>
-                        </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <!-- Term-wise Performance -->
-                <div class="bg-white shadow rounded-lg">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Term Performance</h3>
-                    </div>
-                    <div class="overflow-hidden">
-                        <?php if (!empty($grouped_resultsByYear)): ?>
-                        <ul class="divide-y divide-gray-200">
-                            <?php foreach ($grouped_resultsByYear as $year => $terms): ?>
-                                <li class="bg-gray-50 px-6 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                    Academic Year: <?php echo htmlspecialchars($year); ?>
-                                </li>
-                                <?php foreach ($terms as $term => $data): ?>
-                                <?php 
-                                $gpa = $data['total_credits'] > 0 ? $data['total_grade_points'] / $data['total_credits'] : 0;
-                                $gpa_color = $gpa >= 3.0 ? 'text-green-600' : ($gpa >= 2.0 ? 'text-yellow-600' : 'text-red-600');
-                                ?>
-                                <li class="px-6 py-4">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0">
-                                                <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                                    <span class="text-sm font-medium text-gray-600">T<?php echo $term; ?></span>
-                                                </div>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Term <?php echo $term; ?></div>
-                                                <div class="text-sm text-gray-500"><?php echo count($data['subjects']); ?> subjects • <?php echo $data['total_credits']; ?> credits</div>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="text-sm font-medium <?php echo $gpa_color; ?>">GPA: <?php echo formatGPA($gpa); ?></div>
-                                            <div class="text-sm text-gray-500">Completed</div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <?php endforeach; ?>
-                            <?php endforeach; ?>
-                        </ul>
-                        <?php else: ?>
-                        <div class="text-center py-8">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No term data</h3>
-                            <p class="mt-1 text-sm text-gray-500">Your term performance will appear here once you have results.</p>
-                        </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detailed Results Table -->
-            <div class="mt-8 bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">Detailed Academic Record</h3>
-                    <a href="../admin/export/result_pdf.php?student_id=<?php echo $student_id; ?>" 
-                       target="_blank"
-                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200">
-                        Download PDF
-                    </a>
-                </div>
-                <div class="overflow-x-auto">
-                    <?php if (!empty($grouped_resultsByClass)): ?>
-                    <?php foreach ($grouped_resultsByClass as $class_level => $years): ?>
-                        <div class="bg-blue-600 px-6 py-2 text-white font-bold uppercase tracking-wider">
-                            Class Level: <?php echo htmlspecialchars($class_level); ?>
-                        </div>
-                        <?php foreach ($years as $year => $terms): ?>
-                        <?php 
-                        $year_credits = 0;
-                        $year_gp = 0;
-                        foreach ($terms as $term_data) {
-                            $year_credits += $term_data['total_credits'];
-                            $year_gp += $term_data['total_grade_points'];
-                        }
-                        $year_avg_gpa = $year_credits > 0 ? $year_gp / $year_credits : 0;
-                        $year_passed = $year_avg_gpa > 1.5;
-                        ?>
-                        <div class="px-6 py-4 bg-gray-100 border-b border-gray-200 flex justify-between items-center">
-                            <div>
-                                <h3 class="text-lg font-bold text-gray-800">Academic Year: <?php echo htmlspecialchars($year); ?></h3>
-                                <p class="text-sm text-gray-600">Yearly Average GPA: <span class="font-semibold"><?php echo formatGPA($year_avg_gpa); ?></span></p>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-sm font-bold <?php echo $year_passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                                <?php echo $year_passed ? 'PASSED' : 'RETAINED'; ?>
-                            </span>
-                        </div>
-                        <?php foreach ($terms as $term => $data): ?>
-                        <div class="border-b border-gray-200 last:border-b-0">
-                            <div class="px-6 py-3 bg-gray-50">
-                                <h4 class="text-md font-semibold text-gray-900">Term <?php echo $term; ?></h4>
-                            </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade Point</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <?php foreach ($data['subjects'] as $result): ?>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900"><?php echo $result['subject_name']; ?></div>
-                                            <div class="text-sm text-gray-500"><?php echo $result['subject_code']; ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <?php echo $result['credits']; ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <?php echo $result['marks_obtained']; ?>%
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                <?php echo $result['grade'] === 'F' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'; ?>">
-                                                <?php echo $result['grade']; ?>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <?php echo $result['grade_point']; ?>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                    <tr class="bg-gray-50 font-semibold">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" colspan="2">
-                                            Term GPA
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" colspan="3">
-                                            <?php 
-                                            $semester_gpa_value = $data['total_credits'] > 0 ? $data['total_grade_points'] / $data['total_credits'] : 0;
-                                            echo formatGPA($semester_gpa_value);
-                                            ?>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        </div>
-                        <?php endforeach; ?>
-                        <?php endforeach; ?>
-                    <?php endforeach; ?>
+                <p class="text-blue-100 font-medium mb-6">
+                    <?php if ($student['class_level'] === 'Form 2'): ?>
+                        Congratulations on passing Form 2! Please choose your academic track for Form 3.
                     <?php else: ?>
-                    <div class="text-center py-8">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No academic records</h3>
-                        <p class="mt-1 text-sm text-gray-500">Your detailed academic record will appear here once results are published.</p>
+                        Please choose your academic track to see relevant subjects and assignments.
+                    <?php endif; ?>
+                </p>
+                <form action="select_stream.php" method="POST" class="flex flex-wrap gap-4">
+                    <button type="submit" name="stream" value="General" class="bg-white text-blue-600 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-blue-50 transition-all">General</button>
+                    <button type="submit" name="stream" value="Science" class="bg-white text-blue-600 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-blue-50 transition-all">Science</button>
+                    <button type="submit" name="stream" value="Arts" class="bg-white text-blue-600 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-blue-50 transition-all">Arts</button>
+                </form>
+            </div>
+            <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Statistics Dashboard -->
+        <?php 
+        $subjects_count = 0;
+        foreach ($grouped_resultsByClass as $class => $years) {
+            foreach ($years as $year => $terms) {
+                foreach ($terms as $term_data) {
+                    $subjects_count += count($term_data['subjects']);
+                }
+            }
+        }
+        $total_terms = 0;
+        foreach ($grouped_resultsByYear as $terms) {
+            $total_terms += count($terms);
+        }
+        $is_highschool = strpos($student['class_level'], 'Form') !== false || $student['class_level'] === 'Graduated';
+        $expected_subjects = $is_highschool ? 44 : 30;
+        $expected_terms = 8;
+        $expected_credits = $is_highschool ? 132 : 100;
+        ?>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="dashboard-card group">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="stats-icon-wrapper bg-emerald-50 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-500">
+                        <i class="fas fa-book-open"></i>
                     </div>
+                    <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Efficiency</span>
+                </div>
+                <dt class="text-sm font-bold text-slate-500">Subjects Completed</dt>
+                <dd class="mt-2 text-4xl font-black text-slate-900"><?php echo $subjects_count; ?></dd>
+                <div class="mt-6">
+                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                        <span>Progress</span>
+                        <span><?php echo min(100, round(($subjects_count / $expected_subjects) * 100)); ?>%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div class="bg-emerald-500 h-full rounded-full transition-all duration-1000" style="width: <?php echo min(100, ($subjects_count / $expected_subjects) * 100); ?>%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card group">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="stats-icon-wrapper bg-blue-50 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-500">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Journey</span>
+                </div>
+                <dt class="text-sm font-bold text-slate-500">Terms Completed</dt>
+                <dd class="mt-2 text-4xl font-black text-slate-900"><?php echo $total_terms; ?></dd>
+                <div class="mt-6">
+                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                        <span>Timeline</span>
+                        <span><?php echo min(100, round(($total_terms / $expected_terms) * 100)); ?>%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: <?php echo min(100, ($total_terms / $expected_terms) * 100); ?>%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card group">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="stats-icon-wrapper bg-indigo-50 text-indigo-600 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-500">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Achievement</span>
+                </div>
+                <dt class="text-sm font-bold text-slate-500">Total Credits</dt>
+                <dd class="mt-2 text-4xl font-black text-slate-900"><?php echo $total_credits; ?></dd>
+                <div class="mt-6">
+                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                        <span>Completion</span>
+                        <span><?php echo min(100, round(($total_credits / $expected_credits) * 100)); ?>%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: <?php echo min(100, ($total_credits / $expected_credits) * 100); ?>%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GPA Trend Analysis -->
+        <?php if (!empty($chart_data)): ?>
+        <div class="dashboard-card mb-12">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Academic Momentum</h3>
+                    <p class="text-slate-500 font-medium text-sm">GPA performance trend over time</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Live GPA Index</span>
+                </div>
+            </div>
+            <div class="h-80">
+                <canvas id="gpaTrendChart"></canvas>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+            <!-- Latest Milestone (Cleaned up card) -->
+            <div class="dashboard-card h-full">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Latest Milestone</h3>
+                    <div class="bg-blue-50 text-blue-600 p-2 rounded-xl">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <?php if ($recent_results->num_rows > 0): ?>
+                        <?php while($result = $recent_results->fetch_assoc()): ?>
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-blue-200 hover:bg-white hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center gap-4 text-left">
+                                <div class="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center font-black text-blue-600 shadow-sm">
+                                    <?php echo $result['grade']; ?>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm"><?php echo htmlspecialchars($result['subject_name']); ?></h4>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><?php echo $result['subject_code']; ?></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-black text-slate-900"><?php echo $result['marks_obtained']; ?>%</p>
+                                <p class="text-[10px] font-bold text-blue-500 uppercase">GP: <?php echo $result['grade_point']; ?></p>
+                            </div>
+                        </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <div class="text-center py-12">
+                            <p class="text-slate-400 text-sm font-medium italic">No results yet</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Term-wise Performance (Dashboard-Card style) -->
+            <div class="dashboard-card h-full">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Term Performance</h3>
+                    <div class="bg-orange-50 text-orange-600 p-2 rounded-xl">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <?php if (!empty($grouped_resultsByYear)): ?>
+                        <?php 
+                        // Flatten and take latest 4 terms for the summary
+                        $terms_display = [];
+                        foreach ($grouped_resultsByYear as $year => $terms) {
+                            foreach ($terms as $term => $data) {
+                                $terms_display[] = ['year' => $year, 'term' => $term, 'data' => $data];
+                            }
+                        }
+                        $terms_display = array_reverse($terms_display);
+                        $terms_display = array_slice($terms_display, 0, 4);
+                        
+                        foreach ($terms_display as $item): 
+                            $year = $item['year'];
+                            $term = $item['term'];
+                            $data = $item['data'];
+                            $t_gpa = $data['total_credits'] > 0 ? $data['total_grade_points'] / $data['total_credits'] : 0;
+                        ?>
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                            <div class="flex items-center gap-4 text-left">
+                                <div class="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center font-black text-slate-600">
+                                    T<?php echo $term; ?>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Term <?php echo $term; ?></h4>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><?php echo htmlspecialchars($year); ?></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-black text-blue-600">GPA <?php echo formatGPA($t_gpa); ?></p>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase"><?php echo count($data['subjects']); ?> Subjects</p>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="text-center py-12">
+                            <p class="text-slate-400 text-sm font-medium italic">No historical data available</p>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
+
+        <!-- Academic Inventory -->
+        <?php if (!empty($grouped_resultsByClass)): ?>
+            <div class="flex items-center justify-between mb-8 mt-16">
+                <div>
+                    <h3 class="text-2xl font-black text-slate-900 tracking-tight">Academic Inventory</h3>
+                    <p class="text-slate-500 font-medium">Detailed historical record of your education</p>
+                </div>
+                <a href="../admin/export/result_pdf.php?student_id=<?php echo $student_id; ?>" 
+                   target="_blank"
+                   class="premium-gradient-bg text-white px-8 py-3 rounded-2xl shadow-lg shadow-blue-200 text-sm font-bold transition-all hover:scale-105 active:scale-95">
+                   <i class="fas fa-file-pdf mr-2"></i> Export Academic Transcript
+                </a>
+            </div>
+
+            <?php foreach ($grouped_resultsByClass as $class_level => $years): ?>
+                <div class="mb-12">
+                    <div class="flex items-center gap-4 mb-8">
+                        <span class="bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-lg shadow-lg shadow-blue-500/20">Level</span>
+                        <h4 class="text-xl font-black text-slate-900 uppercase tracking-tight"><?php echo htmlspecialchars($class_level); ?></h4>
+                        <div class="flex-1 h-px bg-slate-200/50"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-8">
+                        <?php foreach ($years as $year => $terms): ?>
+                            <?php 
+                            $year_credits = 0;
+                            $year_gp = 0;
+                            foreach ($terms as $term_data) {
+                                $year_credits += $term_data['total_credits'];
+                                $year_gp += $term_data['total_grade_points'];
+                            }
+                            $year_avg_gpa = $year_credits > 0 ? $year_gp / $year_credits : 0;
+                            $year_passed = $year_avg_gpa > 1.5;
+                            ?>
+                            <div class="dashboard-card !p-0 overflow-hidden">
+                                <div class="p-8 bg-slate-50/50 flex justify-between items-center border-b border-slate-100">
+                                    <div>
+                                        <h5 class="text-lg font-black text-slate-900">Academic Year: <?php echo htmlspecialchars($year); ?></h5>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">GPA Performance Index: <span class="text-slate-900"><?php echo formatGPA($year_avg_gpa); ?></span></p>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <span class="status-badge-premium !px-5 !py-2 <?php echo $year_passed ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'; ?>">
+                                            <?php echo $year_passed ? 'PROGRESSED' : 'RETAINED'; ?>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="p-8 space-y-12">
+                                    <?php foreach ($terms as $term => $data): ?>
+                                        <div>
+                                            <div class="flex items-center justify-between mb-6">
+                                                <h6 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Term <?php echo $term; ?> Breakdown</h6>
+                                            </div>
+                                            <div class="overflow-hidden rounded-2xl border border-slate-100">
+                                                <table class="table-modern !mb-0">
+                                                    <thead>
+                                                        <tr class="!bg-slate-50">
+                                                            <th>Subject Information</th>
+                                                            <th>Credits</th>
+                                                            <th>Marks</th>
+                                                            <th>Grade</th>
+                                                            <th>Grade Point</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($data['subjects'] as $result): ?>
+                                                        <tr class="hover:bg-slate-50/30 transition-colors">
+                                                            <td class="text-left">
+                                                                <div class="font-bold text-slate-900"><?php echo $result['subject_name']; ?></div>
+                                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5"><?php echo $result['subject_code']; ?></div>
+                                                            </td>
+                                                            <td class="font-bold text-slate-600"><?php echo $result['credits']; ?></td>
+                                                            <td class="font-black text-slate-900"><?php echo $result['marks_obtained']; ?>%</td>
+                                                            <td>
+                                                                <span class="status-badge-premium !text-[10px] border border-slate-100 <?php echo $result['grade'] === 'F' ? 'bg-rose-50 text-rose-600' : 'bg-white text-blue-600'; ?>">
+                                                                    <?php echo $result['grade']; ?>
+                                                                </span>
+                                                            </td>
+                                                            <td class="font-black text-slate-900"><?php echo $result['grade_point']; ?></td>
+                                                        </tr>
+                                                        <?php endforeach; ?>
+                                                        <tr class="bg-blue-600">
+                                                            <td colspan="4" class="text-right py-4 px-8">
+                                                                <span class="text-[10px] font-black text-white/70 uppercase tracking-widest">Term Performance GPA</span>
+                                                            </td>
+                                                            <td class="text-white font-black text-lg py-4 px-8">
+                                                                <?php echo formatGPA($data['total_credits'] > 0 ? $data['total_grade_points'] / $data['total_credits'] : 0); ?>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="dashboard-card text-center py-24 mt-12 bg-transparent border-dashed border-2 border-slate-200">
+                <i class="fas fa-inbox text-slate-200 text-6xl mb-6"></i>
+                <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight">Academic Vault Empty</h3>
+                <p class="text-slate-400 font-medium">Your historical records will appear here as soon as they are finalized by the administration.</p>
+            </div>
+        <?php endif; ?>
+
+        <!-- Footer Actions -->
+        <div class="mt-12 pt-12 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4 text-slate-400">
+                <i class="fas fa-shield-alt text-xl"></i>
+                <p class="text-sm font-medium italic">Secure academic portal powered by Hirgal Nexus SRMIS Engine</p>
+            </div>
+            <form action="../includes/upload_avatar.php" method="post" enctype="multipart/form-data" class="flex items-center gap-4 bg-slate-100 p-2 rounded-2xl border border-slate-200/50">
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Profile Identity</label>
+                <div class="flex items-center gap-3">
+                    <input type="file" name="avatar" accept="image/*" required class="text-[10px] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-white file:text-blue-600 hover:file:bg-blue-50 cursor-pointer" />
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/10">Update</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
 <?php include '../includes/footer.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!empty($chart_data)): ?>
+    const ctx = document.getElementById('gpaTrendChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?php echo json_encode($chart_labels); ?>,
+            datasets: [{
+                label: 'Term GPA',
+                data: <?php echo json_encode($chart_data); ?>,
+                borderColor: '#3b82f6',
+                borderWidth: 4,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#3b82f6',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                fill: true,
+                backgroundColor: gradient,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
+                    displayColors: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 4.0,
+                    grid: { color: '#f1f5f9' },
+                    ticks: { font: { weight: 'bold', color: '#64748b' } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { weight: 'bold', color: '#64748b' } }
+                }
+            }
+        }
+    });
+    <?php endif; ?>
+});
+</script>
