@@ -1,17 +1,71 @@
+@keyframes aurora-1 {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30%, -20%) scale(1.1); }
+    66% { transform: translate(-20%, 20%) scale(0.9); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes aurora-2 {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-20%, 30%) scale(1.2); }
+    66% { transform: translate(20%, -10%) scale(0.8); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
 :root {
     --primary-gradient: linear-gradient(135deg, #6366f1 0%, #3b82f6 50%, #60a5fa 100%);
     --glass-bg: rgba(255, 255, 255, 0.7);
     --glass-border: rgba(255, 255, 255, 0.2);
+    --aurora-1: rgba(99, 102, 241, 0.15);
+    --aurora-2: rgba(59, 130, 246, 0.15);
 }
 
 body {
     font-family: 'Inter', sans-serif;
     scroll-behavior: smooth;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: #f8fafc;
+    color: #0f172a;
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* Elegance Foundations */
+.aurora-bg {
+    position: relative;
+    overflow: hidden;
+}
+
+.aurora-bg::before,
+.aurora-bg::after {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: -1;
+}
+
+.aurora-bg::before {
+    background: var(--aurora-1);
+    top: -200px;
+    left: -200px;
+    animation: aurora-1 20s infinite alternate;
+}
+
+.aurora-bg::after {
+    background: var(--aurora-2);
+    bottom: -200px;
+    right: -200px;
+    animation: aurora-2 25s infinite alternate;
 }
 
 .glass-effect {
@@ -19,6 +73,7 @@ h1, h2, h3, h4, h5, h6 {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 
 .gradient-text {
@@ -32,11 +87,84 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--primary-gradient);
 }
 
-.gradient-border {
+/* Bento Grid */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.bento-item {
+    background: white;
+    border-radius: 2rem;
+    padding: 2.5rem;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #f1f5f9;
+}
+
+.bento-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+}
+
+/* Marquee for Partners */
+.marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
     position: relative;
-    background: linear-gradient(white, white) padding-box,
-                var(--primary-gradient) border-box;
-    border: 2px solid transparent;
+}
+
+.marquee-content {
+    display: inline-block;
+    animation: marquee 30s linear infinite;
+}
+
+.marquee-content img {
+    height: 40px;
+    margin: 0 3rem;
+    filter: grayscale(1) opacity(0.5);
+    transition: all 0.3s ease;
+}
+
+.marquee-content img:hover {
+    filter: grayscale(0) opacity(1);
+    transform: scale(1.1);
+}
+
+/* FAQ Accordion */
+.faq-item {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.faq-trigger {
+    width: 100%;
+    text-align: left;
+    padding: 1.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+.faq-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    color: #64748b;
+}
+
+.faq-item.active .faq-content {
+    max-height: 200px;
+    padding-bottom: 1.5rem;
+}
+
+.faq-item.active .faq-icon {
+    transform: rotate(180deg);
+}
+
+.faq-icon {
+    transition: transform 0.3s ease;
 }
 
 .portal-hover {
@@ -70,13 +198,6 @@ h1, h2, h3, h4, h5, h6 {
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #3b82f6;
     border-radius: 3px;
-}
-
-.typewriter {
-    overflow: hidden;
-    border-right: 3px solid #3b82f6;
-    white-space: nowrap;
-    animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
 }
 
 @keyframes typing {

@@ -134,24 +134,17 @@ try {
     </nav>
 
     <!-- Hero Section -->
-    <header class="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
-        <!-- Animated Background Elements -->
-        <div class="absolute inset-0 -z-10 overflow-hidden">
-            <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-glow"></div>
-            <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-glow animation-delay-2000"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
-        </div>
-        
+    <header class="relative pt-32 pb-24 md:pt-48 md:pb-40 overflow-hidden aurora-bg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div class="text-center" data-aos="fade-up" data-aos-delay="100">
-                <div class="inline-flex items-center gap-2 mb-8 px-4 py-2 bg-white/80 rounded-full shadow-sm border border-gray-100">
-                    <span class="flex h-2 w-2 rounded-full bg-green-500 animate-ping"></span>
-                    <span class="text-sm font-semibold text-gray-700">System Status: <span class="text-green-600">Live & Operational</span></span>
+            <div class="text-center" data-aos="zoom-out" data-aos-duration="1200">
+                <div class="inline-flex items-center gap-2 mb-10 px-6 py-2.5 bg-white/60 backdrop-blur-md rounded-full shadow-sm border border-white/40">
+                    <span class="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span class="text-xs font-bold text-blue-900 tracking-widest uppercase">Experience the Future of Education</span>
                 </div>
                 
-                <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 mb-6 leading-tight">
-                    <span class="block">Revolutionizing</span>
-                    <span class="gradient-text">Education</span>
+                <h1 class="text-6xl md:text-8xl lg:text-9xl font-black text-slate-900 mb-8 leading-[0.9] tracking-tighter">
+                    Empowering <br/>
+                    <span class="gradient-text">Excellence.</span>
                 </h1>
                 
                 <p class="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-10 leading-relaxed font-light">
@@ -208,58 +201,114 @@ try {
         </div>
     </header>
 
-    <!-- Statistics Section with Modern Cards -->
-    <section id="stats" class="py-16">
+    <!-- Statistics Section -->
+    <section id="stats" class="py-24 relative z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="glass-effect p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300" data-aos="fade-up" data-aos-delay="100">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-blue-100 rounded-xl">
-                            <i class="fas fa-user-graduate text-blue-600 text-xl"></i>
-                        </div>
-                        <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">+12%</span>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="glass-effect p-10 rounded-[2.5rem] text-center group hover:bg-white transition-all duration-500" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-user-graduate text-blue-600 text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900 mb-2"><?php echo number_format($totalStudents); ?></p>
-                    <p class="text-gray-500 font-medium">Active Students</p>
+                    <div class="flex items-baseline justify-center gap-1">
+                        <span class="text-5xl font-black text-slate-900 stat-counter" data-target="<?php echo $totalStudents; ?>">0</span>
+                        <span class="text-xl font-bold text-blue-600">+</span>
+                    </div>
+                    <p class="text-slate-500 font-semibold mt-4">Active Learners</p>
                 </div>
                 
-                <div class="glass-effect p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300" data-aos="fade-up" data-aos-delay="200">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-purple-100 rounded-xl">
-                            <i class="fas fa-chalkboard-teacher text-purple-600 text-xl"></i>
-                        </div>
-                        <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">+8%</span>
+                <div class="glass-effect p-10 rounded-[2.5rem] text-center group hover:bg-white transition-all duration-500" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-chalkboard-teacher text-indigo-600 text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900 mb-2"><?php echo number_format($totalTeachers); ?></p>
-                    <p class="text-gray-500 font-medium">Expert Teachers</p>
+                    <div class="flex items-baseline justify-center gap-1">
+                        <span class="text-5xl font-black text-slate-900 stat-counter" data-target="<?php echo $totalTeachers; ?>">0</span>
+                    </div>
+                    <p class="text-slate-500 font-semibold mt-4">Expert Faculty</p>
                 </div>
                 
-                <div class="glass-effect p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300" data-aos="fade-up" data-aos-delay="300">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-green-100 rounded-xl">
-                            <i class="fas fa-file-alt text-green-600 text-xl"></i>
-                        </div>
-                        <span class="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">+24%</span>
+                <div class="glass-effect p-10 rounded-[2.5rem] text-center group hover:bg-white transition-all duration-500" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-file-invoice text-purple-600 text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900 mb-2"><?php echo number_format($totalResults); ?></p>
-                    <p class="text-gray-500 font-medium">Published Results</p>
+                    <div class="flex items-baseline justify-center gap-1">
+                        <span class="text-5xl font-black text-slate-900 stat-counter" data-target="<?php echo $totalResults; ?>">0</span>
+                        <span class="text-xl font-bold text-purple-600">k</span>
+                    </div>
+                    <p class="text-slate-500 font-semibold mt-4">Results Published</p>
                 </div>
                 
-                <div class="glass-effect p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300" data-aos="fade-up" data-aos-delay="400">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-yellow-100 rounded-xl">
-                            <i class="fas fa-server text-yellow-600 text-xl"></i>
-                        </div>
-                        <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">99.9%</span>
+                <div class="glass-effect p-10 rounded-[2.5rem] text-center group hover:bg-white transition-all duration-500" data-aos="fade-up" data-aos-delay="400">
+                    <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-shield-check text-emerald-600 text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900 mb-2">24/7</p>
-                    <p class="text-gray-500 font-medium">System Uptime</p>
+                    <div class="flex items-baseline justify-center gap-1">
+                        <span class="text-5xl font-black text-slate-900">99.9</span>
+                        <span class="text-xl font-bold text-emerald-600">%</span>
+                    </div>
+                    <p class="text-slate-500 font-semibold mt-4">System Reliability</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Portals Section with Modern Cards -->
+    <!-- Trusted By Marquee -->
+    <section class="py-12 border-y border-slate-100 bg-white/50 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="text-center text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mb-8">Trusted by Leading Institutions</p>
+            <div class="marquee-container">
+                <div class="marquee-content">
+                    <!-- Placeholder logos using Font Awesome icons as stylized logos -->
+                    <div class="inline-flex items-center gap-12 mx-8">
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-university text-2xl"></i>
+                            <span class="font-bold tracking-tighter">OXFORD ACADEMY</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-school text-2xl"></i>
+                            <span class="font-bold tracking-tighter">ELITE PREP</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-microchip text-2xl"></i>
+                            <span class="font-bold tracking-tighter">TECH INSTITUTE</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-graduation-cap text-2xl"></i>
+                            <span class="font-bold tracking-tighter">GLOBAL SCHOOLS</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-book-reader text-2xl"></i>
+                            <span class="font-bold tracking-tighter">OPEN UNIVERSITY</span>
+                        </div>
+                    </div>
+                    <!-- Repeat for seamless scroll -->
+                    <div class="inline-flex items-center gap-12 mx-8">
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-university text-2xl"></i>
+                            <span class="font-bold tracking-tighter">OXFORD ACADEMY</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-school text-2xl"></i>
+                            <span class="font-bold tracking-tighter">ELITE PREP</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-microchip text-2xl"></i>
+                            <span class="font-bold tracking-tighter">TECH INSTITUTE</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-graduation-cap text-2xl"></i>
+                            <span class="font-bold tracking-tighter">GLOBAL SCHOOLS</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-400 grayscale filter">
+                            <i class="fas fa-book-reader text-2xl"></i>
+                            <span class="font-bold tracking-tighter">OPEN UNIVERSITY</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portals Section -->
     <section id="portals" class="py-24 relative">
         <div class="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-transparent -z-10"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -373,110 +422,128 @@ try {
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="py-24">
+    <!-- Bento Features Section -->
+    <section id="features" class="py-32 bg-slate-50/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-16 items-center">
-                <div data-aos="fade-right">
-                    <div class="inline-block mb-6">
-                        <span class="text-sm font-semibold text-primary-600 bg-primary-50 px-4 py-2 rounded-full">
-                            <i class="fas fa-bolt mr-2"></i>KEY FEATURES
-                        </span>
-                    </div>
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-8">
-                        Everything you need for
-                        <span class="gradient-text">educational excellence</span>
-                    </h2>
-                    <p class="text-gray-600 text-lg mb-12">
-                        Our platform combines cutting-edge technology with pedagogical insights to deliver an unparalleled educational management experience.
-                    </p>
-                    
-                    <div class="space-y-8">
-                        <div class="flex gap-6 group" data-aos="fade-up" data-aos-delay="100">
-                            <div class="flex-shrink-0 w-14 h-14 gradient-bg rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                                <i class="fas fa-chart-bar text-white text-xl"></i>
+            <div class="text-center mb-20" data-aos="fade-up">
+                <h2 class="text-5xl font-black text-slate-900 mb-6">Built for the <span class="gradient-text">Next Generation</span></h2>
+                <p class="text-slate-500 text-lg max-w-2xl mx-auto italic">"Design is not just what it looks like and feels like. Design is how it works."</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <!-- Large Bento Item -->
+                <div class="md:col-span-8 bg-white p-12 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group" data-aos="fade-right">
+                    <div class="flex flex-col h-full justify-between">
+                        <div>
+                            <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-600 transition-colors">
+                                <i class="fas fa-chart-line text-blue-600 group-hover:text-white transition-colors"></i>
                             </div>
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-900 mb-3"><?php echo htmlspecialchars($feature1Title); ?></h4>
-                                <p class="text-gray-500"><?php echo htmlspecialchars($feature1Desc); ?></p>
-                            </div>
+                            <h3 class="text-3xl font-bold text-slate-900 mb-4"><?php echo htmlspecialchars($feature1Title); ?></h3>
+                            <p class="text-slate-500 text-lg leading-relaxed max-w-md"><?php echo htmlspecialchars($feature1Desc); ?></p>
                         </div>
-                        
-                        <div class="flex gap-6 group" data-aos="fade-up" data-aos-delay="200">
-                            <div class="flex-shrink-0 w-14 h-14 gradient-bg rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                                <i class="fas fa-bolt text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-900 mb-3"><?php echo htmlspecialchars($feature2Title); ?></h4>
-                                <p class="text-gray-500"><?php echo htmlspecialchars($feature2Desc); ?></p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex gap-6 group" data-aos="fade-up" data-aos-delay="300">
-                            <div class="flex-shrink-0 w-14 h-14 gradient-bg rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                                <i class="fas fa-shield-halved text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-900 mb-3"><?php echo htmlspecialchars($feature3Title); ?></h4>
-                                <p class="text-gray-500"><?php echo htmlspecialchars($feature3Desc); ?></p>
-                            </div>
+                        <div class="mt-12 bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                             <div class="flex items-center justify-between mb-4">
+                                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Live Preview</span>
+                                 <span class="text-xs font-bold text-green-500">Processing...</span>
+                             </div>
+                             <div class="space-y-3">
+                                 <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                                     <div class="h-full bg-blue-500 w-3/4 animate-pulse"></div>
+                                 </div>
+                                 <div class="h-2 w-1/2 bg-slate-200 rounded-full"></div>
+                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div data-aos="fade-left">
-                    <div class="relative">
-                        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-1 shadow-2xl">
-                            <div class="bg-gray-900 rounded-3xl p-8">
-                                <!-- Mock Dashboard -->
-                                <div class="space-y-6">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                                        </div>
-                                        <span class="text-gray-400 text-sm">Dashboard Preview</span>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-3 gap-4">
-                                        <div class="bg-gray-800 rounded-xl p-4">
-                                            <div class="text-gray-400 text-sm mb-2">Students</div>
-                                            <div class="text-2xl font-bold text-white"><?php echo number_format($totalStudents); ?></div>
-                                        </div>
-                                        <div class="bg-gray-800 rounded-xl p-4">
-                                            <div class="text-gray-400 text-sm mb-2">Teachers</div>
-                                            <div class="text-2xl font-bold text-white"><?php echo number_format($totalTeachers); ?></div>
-                                        </div>
-                                        <div class="bg-gray-800 rounded-xl p-4">
-                                            <div class="text-gray-400 text-sm mb-2">Results</div>
-                                            <div class="text-2xl font-bold text-white"><?php echo number_format($totalResults); ?></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="bg-gray-800 rounded-xl p-4">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <div class="text-gray-400 text-sm">Performance Trend</div>
-                                            <div class="text-green-400 text-sm">↑ 12%</div>
-                                        </div>
-                                        <div class="h-32 flex items-end space-x-2">
-                                            <div class="flex-1 bg-gradient-to-t from-primary-500 to-primary-300 rounded-t-lg" style="height: 70%"></div>
-                                            <div class="flex-1 bg-gradient-to-t from-primary-500 to-primary-300 rounded-t-lg" style="height: 85%"></div>
-                                            <div class="flex-1 bg-gradient-to-t from-primary-500 to-primary-300 rounded-t-lg" style="height: 60%"></div>
-                                            <div class="flex-1 bg-gradient-to-t from-primary-500 to-primary-300 rounded-t-lg" style="height: 90%"></div>
-                                            <div class="flex-1 bg-gradient-to-t from-primary-500 to-primary-300 rounded-t-lg" style="height: 75%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+
+                <!-- Small Bento Item -->
+                <div class="md:col-span-4 bg-gradient-to-br from-indigo-600 to-blue-700 p-12 rounded-[3rem] text-white shadow-xl group" data-aos="fade-left">
+                    <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-8">
+                        <i class="fas fa-bolt text-white"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-4"><?php echo htmlspecialchars($feature2Title); ?></h3>
+                    <p class="text-indigo-100 leading-relaxed"><?php echo htmlspecialchars($feature2Desc); ?></p>
+                    <div class="mt-12">
+                        <i class="fas fa-microchip text-6xl opacity-20"></i>
+                    </div>
+                </div>
+
+                <!-- Three Bottom Items -->
+                <div class="md:col-span-4 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-shield-halved text-purple-600"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3"><?php echo htmlspecialchars($feature3Title); ?></h4>
+                    <p class="text-slate-500"><?php echo htmlspecialchars($feature3Desc); ?></p>
+                </div>
+
+                <div class="md:col-span-4 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-mobile-screen text-amber-600"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3">Mobile Results</h4>
+                    <p class="text-slate-500">Access grades and reports on any device with our fully responsive student portal.</p>
+                </div>
+
+                <div class="md:col-span-4 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-14 h-14 bg-rose-50 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-file-pdf text-rose-600"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3">Instant Export</h4>
+                    <p class="text-slate-500">One-click PDF generation for result slips, transcripts, and school-wide performance charts.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-32 bg-white relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_10%_20%,rgba(59,130,246,0.03)_0%,transparent_50%)]"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center mb-20" data-aos="fade-up">
+                <span class="text-blue-600 font-bold tracking-widest uppercase text-xs">Testimonials</span>
+                <h2 class="text-4xl md:text-5xl font-black text-slate-900 mt-4 mb-6">Voices of Innovation</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white transition-colors group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex gap-1 text-amber-400 mb-6">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-slate-600 italic leading-relaxed mb-8">"The transition to SRMIS was the best technical decision our school made this decade. The automation is flawless."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">JD</div>
+                        <div>
+                            <p class="font-bold text-slate-900">Dr. James Dalton</p>
+                            <p class="text-xs text-slate-400">Principal, St. Andrews</p>
                         </div>
-                        
-                        <!-- Floating Elements Around Dashboard -->
-                        <div class="absolute -top-6 -right-6 w-12 h-12 bg-white rounded-2xl shadow-xl flex items-center justify-center">
-                            <i class="fas fa-trophy text-yellow-500 text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="p-10 rounded-[2.5rem] bg-blue-600 border border-blue-500 text-white shadow-2xl group" data-aos="fade-up" data-aos-delay="200">
+                    <div class="flex gap-1 text-blue-200 mb-6">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="italic leading-relaxed mb-8">"Teachers actually enjoy inputting results now. The bulk tools and intuitive UI saved our staff hundreds of hours annually."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold">SM</div>
+                        <div>
+                            <p class="font-bold">Sarah Miller</p>
+                            <p class="text-xs text-blue-200">Head of Department</p>
                         </div>
-                        <div class="absolute -bottom-6 -left-6 w-12 h-12 bg-white rounded-2xl shadow-xl flex items-center justify-center">
-                            <i class="fas fa-chart-line text-green-500 text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white transition-colors group" data-aos="fade-up" data-aos-delay="300">
+                    <div class="flex gap-1 text-amber-400 mb-6">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-slate-600 italic leading-relaxed mb-8">"As a student, having my results available instantly on my phone has changed how I track my own academic progress."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">AK</div>
+                        <div>
+                            <p class="font-bold text-slate-900">Ahmed Khan</p>
+                            <p class="text-xs text-slate-400">Student Representative</p>
                         </div>
                     </div>
                 </div>
@@ -484,29 +551,68 @@ try {
         </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- FAQ Section -->
+    <section class="py-32 bg-slate-50/30">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl font-black text-slate-900 mb-4">Frequently Asked Questions</h2>
+                <p class="text-slate-500">Everything you need to know about the SRMIS ecosystem.</p>
+            </div>
+
+            <div class="space-y-4" data-aos="fade-up">
+                <div class="faq-item active bg-white rounded-3xl p-6 border border-slate-100 px-8">
+                    <button class="faq-trigger">
+                        <span>How secure is the student data?</span>
+                        <i class="fas fa-chevron-down faq-icon text-blue-600"></i>
+                    </button>
+                    <div class="faq-content">
+                        We use enterprise-grade encryption and role-based access control to ensure that only authorized personnel can view or modify sensitive academic records.
+                    </div>
+                </div>
+
+                <div class="faq-item bg-white rounded-3xl p-6 border border-slate-100 px-8">
+                    <button class="faq-trigger">
+                        <span>Can we migrate data from our old system?</span>
+                        <i class="fas fa-chevron-down faq-icon text-blue-600"></i>
+                    </button>
+                    <div class="faq-content">
+                        Yes, our system supports CSV and Excel imports, making it easy to bring over your existing student and result databases seamlessly.
+                    </div>
+                </div>
+
+                <div class="faq-item bg-white rounded-3xl p-6 border border-slate-100 px-8">
+                    <button class="faq-trigger">
+                        <span>Is there a mobile app?</span>
+                        <i class="fas fa-chevron-down faq-icon text-blue-600"></i>
+                    </button>
+                    <div class="faq-content">
+                        The SRMIS is a progressive web application, meaning it works perfectly on all mobile browsers and can be added to your home screen for an app-like experience.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
     <section class="py-24 relative overflow-hidden">
-        <div class="absolute inset-0 gradient-bg opacity-5 -z-10"></div>
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center" data-aos="zoom-in">
-            <div class="bg-white rounded-3xl p-12 shadow-2xl">
-                <div class="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-8">
-                    <i class="fas fa-rocket text-white text-2xl"></i>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-slate-900 rounded-[4rem] p-12 md:p-24 relative overflow-hidden shadow-2xl" data-aos="zoom-in">
+                <!-- Decorative Circle -->
+                <div class="absolute -top-24 -right-24 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl"></div>
+                
+                <div class="relative z-10 text-center">
+                    <h2 class="text-4xl md:text-6xl font-black text-white mb-8 leading-tight">Ready to Elevate Your <br/>School's Potential?</h2>
+                    <p class="text-slate-400 text-xl mb-12 max-w-2xl mx-auto font-light">Join 100+ institutions that have revolutionized their result management systems with SRMIS.</p>
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                        <a href="login.php" class="bg-white text-slate-900 px-12 py-5 rounded-2xl font-black text-lg hover:bg-slate-100 transition shadow-2xl">
+                            Get Started Now
+                        </a>
+                        <a href="#" class="text-white font-bold border-b-2 border-white/20 hover:border-white transition pb-1">
+                            Contact Sales Team
+                        </a>
+                    </div>
                 </div>
-                <h2 class="text-4xl font-bold text-gray-900 mb-6">Ready to Transform Your Institution?</h2>
-                <p class="text-gray-600 text-lg mb-10 max-w-2xl mx-auto">
-                    Join thousands of educational institutions already experiencing the power of modern student management.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-6 justify-center">
-                    <a href="login.php" class="gradient-bg text-white px-10 py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition-all hover:scale-105">
-                        Start Free Trial <i class="fas fa-arrow-right ml-3"></i>
-                    </a>
-                    <a href="#" class="bg-gray-50 text-gray-700 px-10 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all border-2 border-gray-100">
-                        <i class="fas fa-calendar mr-3"></i>Schedule Demo
-                    </a>
-                </div>
-                <p class="text-gray-500 text-sm mt-8">
-                    <i class="fas fa-lock mr-2"></i>Secure onboarding · No credit card required · 30-day free trial
-                </p>
             </div>
         </div>
     </section>
