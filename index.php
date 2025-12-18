@@ -669,23 +669,23 @@ try {
                 
                 <div>
                     <h4 class="text-lg font-bold mb-8 text-white">System Status</h4>
-                    <div class="bg-white/5 p-8 rounded-[2rem] border border-white/10 backdrop-blur-sm group hover:border-blue-500/50 transition-all duration-500">
-                        <div class="flex items-center gap-6 mb-6">
+                    <div class="bg-white/5 p-6 rounded-[2rem] border border-white/10 backdrop-blur-sm group hover:border-blue-500/50 transition-all duration-500">
+                        <div class="flex items-center gap-4 mb-6">
                             <div class="relative flex-shrink-0">
-                                <svg class="w-16 h-16 transform -rotate-90">
-                                    <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="3" fill="transparent" class="text-white/10"/>
-                                    <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="3" fill="transparent" stroke-dasharray="175.9" stroke-dashoffset="1.7" class="text-blue-500 transition-all duration-1000"/>
+                                <svg class="w-14 h-14 transform -rotate-90">
+                                    <circle cx="28" cy="28" r="24" stroke="currentColor" stroke-width="3" fill="transparent" class="text-white/10"/>
+                                    <circle cx="28" cy="28" r="24" stroke="currentColor" stroke-width="3" fill="transparent" stroke-dasharray="150.8" stroke-dashoffset="1.5" class="text-blue-500 transition-all duration-1000"/>
                                 </svg>
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <span class="text-sm font-black text-white">99.9%</span>
+                                    <span class="text-[10px] font-black text-white">99.9%</span>
                                 </div>
                             </div>
                             <div>
                                 <div class="flex items-center gap-2 text-emerald-400 mb-1">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
-                                    <span class="text-xs font-black uppercase tracking-wider">Operational</span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-wider">Operational</span>
                                 </div>
-                                <p class="text-[10px] text-gray-500 font-medium uppercase tracking-widest leading-tight">
+                                <p class="text-[9px] text-gray-500 font-medium uppercase tracking-widest leading-tight">
                                     Verified: <?php echo date('M d, H:i'); ?>
                                 </p>
                             </div>
