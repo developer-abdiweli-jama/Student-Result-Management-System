@@ -669,29 +669,29 @@ try {
                 
                 <div>
                     <h4 class="text-lg font-bold mb-8 text-white">System Status</h4>
-                    <div class="bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
-                        <div class="flex items-center mb-4">
-                            <div class="relative">
-                                <div class="w-16 h-16">
-                                    <svg class="w-full h-full" viewBox="0 0 36 36">
-                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e3a8a" stroke-width="3" stroke-dasharray="100, 100"/>
-                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="99.9, 100"/>
-                                    </svg>
-                                </div>
+                    <div class="bg-white/5 p-8 rounded-[2rem] border border-white/10 backdrop-blur-sm group hover:border-blue-500/50 transition-all duration-500">
+                        <div class="flex items-center gap-6 mb-6">
+                            <div class="relative flex-shrink-0">
+                                <svg class="w-16 h-16 transform -rotate-90">
+                                    <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="3" fill="transparent" class="text-white/10"/>
+                                    <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="3" fill="transparent" stroke-dasharray="175.9" stroke-dashoffset="1.7" class="text-blue-500 transition-all duration-1000"/>
+                                </svg>
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <span class="text-2xl font-bold">99.9%</span>
+                                    <span class="text-sm font-black text-white">99.9%</span>
                                 </div>
                             </div>
-                            <div class="ml-4">
-                                <div class="flex items-center text-green-500 mb-1">
-                                    <span class="flex h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
-                                    <span class="text-sm font-bold">All Systems Go</span>
+                            <div>
+                                <div class="flex items-center gap-2 text-emerald-400 mb-1">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
+                                    <span class="text-xs font-black uppercase tracking-wider">Operational</span>
                                 </div>
-                                <p class="text-xs text-gray-500">Last updated: <?php echo date('M d, H:i'); ?></p>
+                                <p class="text-[10px] text-gray-500 font-medium uppercase tracking-widest leading-tight">
+                                    Verified: <?php echo date('M d, H:i'); ?>
+                                </p>
                             </div>
                         </div>
-                        <a href="#" class="text-sm text-primary-400 hover:text-primary-300 transition">
-                            <i class="fas fa-external-link-alt mr-2"></i>View Status Page
+                        <a href="#" class="block w-full py-3 bg-white/5 rounded-xl text-center text-xs font-bold text-gray-400 hover:bg-white hover:text-slate-900 transition-all">
+                            View Live Status
                         </a>
                     </div>
                 </div>
