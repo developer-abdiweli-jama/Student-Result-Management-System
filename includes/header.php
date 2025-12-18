@@ -31,7 +31,7 @@ if (!isset($hide_header)) {
 </head>
 <body class="bg-gray-50">
     <?php if (!isset($hide_navigation)): ?>
-    <header class="bg-white shadow-sm sticky top-0 z-20 <?php echo isset($_SESSION['user_id']) ? 'lg:ml-64 w-full lg:w-[calc(100%-16rem)]' : ''; ?>">
+    <header class="bg-white shadow-sm sticky top-0 z-20 <?php echo (isset($_SESSION['user_role']) && in_array(strtolower($_SESSION['user_role']), [ROLE_ADMIN, ROLE_TEACHER])) ? 'lg:ml-64 w-full lg:w-[calc(100%-16rem)]' : ''; ?>">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-2 md:grid-cols-3 items-center py-4">
                 <div class="flex items-center">
