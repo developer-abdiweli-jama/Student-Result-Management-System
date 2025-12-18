@@ -629,7 +629,7 @@ try {
                         <span class="text-2xl font-bold"><?php echo htmlspecialchars($siteName); ?></span>
                     </div>
                     <p class="text-gray-400 mb-8 leading-relaxed max-w-md">
-                        The ultimate student result management solution designed for modern educational institutions worldwide.
+                        The ultimate student result management solution. <br/>Designed & Developed with excellence by <a href="#" class="text-white font-bold hover:text-blue-400 transition">Hirgal Nexus</a>.
                     </p>
                     <div class="flex items-center space-x-5">
                         <a href="#" class="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-primary-600 transition-all">
@@ -698,8 +698,8 @@ try {
             </div>
             
             <div class="pt-12 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-6">
-                <p class="text-gray-500 text-sm">
-                    &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. All rights reserved.
+                <p class="text-gray-500 text-sm italic">
+                    &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. Crafted by <span class="text-gray-300 font-semibold">Hirgal Nexus</span>.
                 </p>
                 <div class="flex space-x-8 text-gray-500 text-sm">
                     <a href="#" class="hover:text-white transition">Privacy Policy</a>
