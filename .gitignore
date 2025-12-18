@@ -1,0 +1,27 @@
+# Dependencies
+/vendor/
+composer.lock
+
+# Configuration
+.env
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Logs and temp
+*.log
+/temp/
+
+# Application specific
+/assets/uploads/*
+!/assets/uploads/.gitkeep

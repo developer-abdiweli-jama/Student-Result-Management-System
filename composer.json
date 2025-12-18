@@ -1,0 +1,7 @@
+{
+    "name": "srmis/project",
+    "description": "SRMIS project dependencies",
+    "require": {
+        "dompdf/dompdf": "^3.1"
+    }
+}
