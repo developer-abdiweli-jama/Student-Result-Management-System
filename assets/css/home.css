@@ -25,6 +25,13 @@
     --aurora-2: rgba(59, 130, 246, 0.15);
 }
 
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     scroll-behavior: smooth;

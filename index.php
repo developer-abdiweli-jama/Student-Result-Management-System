@@ -202,7 +202,7 @@ try {
     </header>
 
     <!-- Statistics Section -->
-    <section id="stats" class="py-24 relative z-10">
+    <section id="stats" class="py-24 relative z-10 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="glass-effect p-10 rounded-[2.5rem] text-center group hover:bg-white transition-all duration-500" data-aos="fade-up" data-aos-delay="100">
@@ -309,7 +309,7 @@ try {
     </section>
 
     <!-- Portals Section -->
-    <section id="portals" class="py-24 relative">
+    <section id="portals" class="py-24 relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-transparent -z-10"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16" data-aos="fade-up">
@@ -423,7 +423,7 @@ try {
     </section>
 
     <!-- Bento Features Section -->
-    <section id="features" class="py-32 bg-slate-50/50">
+    <section id="features" class="py-32 bg-slate-50/50 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-20" data-aos="fade-up">
                 <h2 class="text-5xl font-black text-slate-900 mb-6">Built for the <span class="gradient-text">Next Generation</span></h2>
@@ -552,7 +552,7 @@ try {
     </section>
 
     <!-- FAQ Section -->
-    <section class="py-32 bg-slate-50/30">
+    <section class="py-32 bg-slate-50/30 overflow-hidden">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16" data-aos="fade-up">
                 <h2 class="text-4xl font-black text-slate-900 mb-4">Frequently Asked Questions</h2>
@@ -618,7 +618,7 @@ try {
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white pt-20 pb-12">
+    <footer class="bg-gray-900 text-white pt-20 pb-12 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 mb-16">
                 <div class="lg:col-span-2">
