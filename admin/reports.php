@@ -261,7 +261,9 @@ include '../includes/header.php';
                 </div>
                 <div class="p-8">
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                        <?php while($grade = $gradeDistribution->fetch_assoc()): ?>
+                        <?php 
+                        $gradeDistribution->data_seek(0);
+                        while($grade = $gradeDistribution->fetch_assoc()): ?>
                         <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all cursor-default">
                              <span class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black mb-2
                                 <?php echo in_array($grade['grade'], ['A', 'A-', 'B+']) ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
