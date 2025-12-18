@@ -875,3 +875,139 @@ function displayResultList($results, $search = '', $term_filter = '', $subject_f
     <?php include '../includes/footer.php';
 }
 ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- SINGLE ENTRY FORM LOGIC ---
+    const classLevelSelect = document.getElementById('class_level_filter');
+    const studentSelect = document.getElementById('student_id');
+    const subjectSelect = document.getElementById('subject_id');
+    const marksInput = document.getElementById('marks_obtained');
+    const gradePreview = document.getElementById('previewGrade');
+    const pointPreview = document.getElementById('previewPoint');
+    
+    // Grade Scale Definition (Match PHP Logic)
+    const gradeScale = [
+        { min: 80, max: 100, grade: 'A', point: 12 },
+        { min: 75, max: 79, grade: 'A-', point: 11 },
+        { min: 70, max: 74, grade: 'B+', point: 10 },
+        { min: 65, max: 69, grade: 'B', point: 9 },
+        { min: 60, max: 64, grade: 'B-', point: 8 },
+        { min: 55, max: 59, grade: 'C+', point: 7 },
+        { min: 50, max: 54, grade: 'C', point: 6 },
+        { min: 45, max: 49, grade: 'C-', point: 5 },
+        { min: 40, max: 44, grade: 'D+', point: 4 },
+        { min: 35, max: 39, grade: 'D', point: 3 },
+        { min: 30, max: 34, grade: 'D-', point: 2 },
+        { min: 0, max: 29, grade: 'E', point: 1 }
+    ];
+
+    if (classLevelSelect) {
+        classLevelSelect.addEventListener('change', function() {
+            const selectedClass = this.value;
+            
+            // Filter Students
+            Array.from(studentSelect.options).forEach(option => {
+                if (option.value === "") return;
+                const studentClass = option.getAttribute('data-class-level');
+                if (studentClass === selectedClass || selectedClass === "") {
+                    option.style.display = '';
+                    option.disabled = false;
+                } else {
+                    option.style.display = 'none';
+                    option.disabled = true;
+                }
+            });
+            studentSelect.value = ""; // Reset selection
+
+            // Filter Subjects
+            Array.from(subjectSelect.options).forEach(option => {
+                if (option.value === "") return;
+                const subjectClass = option.getAttribute('data-class-level');
+                // Optional: Some logic might require strict matching or loose matching
+                // For now, assuming exact match or subjects shared across levels
+                // Adjust logic if subjects are not class-specific in DB schema
+                if (subjectClass === selectedClass || selectedClass === "") {
+                     option.style.display = '';
+                     option.disabled = false;
+                } else {
+                     option.style.display = 'none';
+                     option.disabled = true;
+                }
+            });
+            subjectSelect.value = ""; // Reset selection
+        });
+    }
+
+    if (marksInput) {
+        marksInput.addEventListener('input', function() {
+            const marks = parseFloat(this.value);
+            let grade = '--';
+            let point = '--';
+
+            if (!isNaN(marks) && marks >= 0 && marks <= 100) {
+                const found = gradeScale.find(g => marks >= g.min && marks <= g.max);
+                if (found) {
+                    grade = found.grade;
+                    point = found.point;
+                } else {
+                    grade = 'E'; // Default fallthrough
+                    point = 1;
+                }
+            }
+
+            if (gradePreview) gradePreview.textContent = grade;
+            if (pointPreview) pointPreview.textContent = 'GP: ' + point;
+        });
+    }
+
+    // --- BULK ENTRY FORM LOGIC ---
+    const bulkClassLevel = document.getElementById('bulk_class_level');
+    const bulkSubjectSelect = document.getElementById('bulk_subject_id');
+    const placeholderRow = document.getElementById('no-students-placeholder');
+    const studentRows = document.querySelectorAll('tbody tr[data-class-level]');
+
+    if (bulkClassLevel) {
+        bulkClassLevel.addEventListener('change', function() {
+            const selectedClass = this.value;
+            let visibleCount = 0;
+
+            // Filter Subjects (similar to single entry)
+             Array.from(bulkSubjectSelect.options).forEach(option => {
+                if (option.value === "") return;
+                const subjectClass = option.getAttribute('data-class-level');
+                if (subjectClass === selectedClass || selectedClass === "") {
+                     option.style.display = '';
+                     option.disabled = false;
+                } else {
+                     option.style.display = 'none';
+                     option.disabled = true;
+                }
+            });
+            bulkSubjectSelect.value = "";
+
+            // Filter Student Rows
+            studentRows.forEach(row => {
+                const rowClass = row.getAttribute('data-class-level');
+                if (rowClass === selectedClass) {
+                    row.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+
+            // Toggle Placeholder
+            if (visibleCount === 0) {
+                placeholderRow.classList.remove('hidden');
+                if (selectedClass) {
+                     placeholderRow.querySelector('p').textContent = "No students found in " + selectedClass;
+                } else {
+                     placeholderRow.querySelector('p').textContent = "Select a Class Level to load students";
+                }
+            } else {
+                placeholderRow.classList.add('hidden');
+            }
+        });
+    }
+});
+</script>

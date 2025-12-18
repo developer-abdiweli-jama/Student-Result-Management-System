@@ -1,46 +1,67 @@
 // assets/js/admin/settings.js
-// Client-side preview and checks for site logo upload
 
-document.addEventListener('DOMContentLoaded', function () {
-    const fileInput = document.querySelector('input[name="site_logo"]');
-    if (!fileInput) return;
-
-    const maxBytes = 2 * 1024 * 1024; // 2MB
-    const previewContainer = document.createElement('div');
-    previewContainer.style.marginTop = '8px';
-    fileInput.parentNode.insertBefore(previewContainer, fileInput.nextSibling);
-
-    fileInput.addEventListener('change', function (e) {
-        previewContainer.innerHTML = '';
-        const f = fileInput.files[0];
-        if (!f) return;
-        if (f.size > maxBytes) {
-            const msg = document.createElement('div');
-            msg.style.color = 'red';
-            msg.textContent = 'File is too large (max 2MB). Please choose a smaller file.';
-            previewContainer.appendChild(msg);
-            fileInput.value = '';
-            return;
-        }
-        const img = document.createElement('img');
-        img.style.maxWidth = '240px';
-        img.style.maxHeight = '120px';
-        previewContainer.appendChild(img);
-        const reader = new FileReader();
-        reader.onload = function (ev) { img.src = ev.target.result; }
-        reader.readAsDataURL(f);
+function switchTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
     });
 
-    // Attach confirmation to the remove logo form if present
-    try {
-        const removeForm = document.querySelector('form[action$="delete_logo.php"]');
-        if (removeForm) {
-            removeForm.addEventListener('submit', function (ev) {
-                const ok = confirm('Are you sure you want to remove the site logo? This action cannot be undone.');
-                if (!ok) ev.preventDefault();
-            });
+    // Reset all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-slate-900', 'text-white');
+        btn.classList.add('text-slate-400');
+    });
+
+    // Show selected tab content
+    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+    // Activate selected tab button
+    const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+    activeBtn.classList.add('active');
+    activeBtn.classList.remove('text-slate-400');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput = document.getElementById('logo_input');
+    if (!fileInput) return;
+
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const logoPreview = document.getElementById('logo_preview');
+    const logoPlaceholder = document.getElementById('logo_placeholder');
+
+    fileInput.addEventListener('change', function (e) {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        // Update display text
+        if (fileNameDisplay) {
+            fileNameDisplay.textContent = file.name;
+            fileNameDisplay.classList.add('text-blue-600');
         }
-    } catch (e) {
-        // ignore
+
+        // Preview image
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                if (logoPreview) {
+                    logoPreview.src = ev.target.result;
+                    logoPreview.classList.remove('hidden');
+                }
+                if (logoPlaceholder) {
+                    logoPlaceholder.classList.add('hidden');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Form submission confirmation
+    const removeLogoForm = document.querySelector('form[action$="delete_logo.php"]');
+    if (removeLogoForm) {
+        removeLogoForm.addEventListener('submit', function(e) {
+            if (!confirm('Are you sure you want to remove the current logo?')) {
+                e.preventDefault();
+            }
+        });
     }
 });

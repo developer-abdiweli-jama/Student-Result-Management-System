@@ -1,183 +1,143 @@
 // assets/js/admin/reports.js
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize charts if Chart.js is available
-    if (typeof Chart !== 'undefined') {
+    // Initialize charts if Chart.js and data are available
+    if (typeof Chart !== 'undefined' && window.chartData) {
         initializeCharts();
     }
-    
-    // Add export functionality
-    addExportButtons();
 });
 
 function initializeCharts() {
-    // Grade Distribution Chart
-    const gradeCtx = document.getElementById('gradeChart');
-    if (gradeCtx) {
-        const gradeData = getGradeDistributionData();
-        new Chart(gradeCtx, {
-            type: 'bar',
-            data: gradeData,
+    const data = window.chartData;
+
+    // Yearly Trends Chart
+    const yearlyCtx = document.getElementById('yearlyChart');
+    if (yearlyCtx) {
+        new Chart(yearlyCtx, {
+            type: 'line',
+            data: {
+                labels: data.yearlyLabels,
+                datasets: [{
+                    label: 'Mean GPA Score',
+                    data: data.yearlyGPA,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#3b82f6',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Grade Distribution'
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        padding: 12,
+                        backgroundColor: '#1e293b',
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        cornerRadius: 8
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Students'
-                        }
+                        max: 4.0,
+                        grid: { borderDash: [5, 5], color: '#f1f5f9' },
+                        ticks: { font: { weight: '600' } }
+                    },
+                    x: {
+                        grid: { display: false }
                     }
                 }
             }
         });
     }
-}
 
-function getGradeDistributionData() {
-    // This would typically come from an API endpoint
-    // For now, we'll extract from the existing HTML
-    const grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'F'];
-    const counts = [];
-    
-    grades.forEach(grade => {
-        const element = document.querySelector(`[data-grade="${grade}"]`);
-        if (element) {
-            counts.push(parseInt(element.textContent) || 0);
-        }
-    });
-    
-    return {
-        labels: grades,
-        datasets: [{
-            data: counts,
-            backgroundColor: [
-                '#10B981', '#34D399', '#6EE7B7',
-                '#60A5FA', '#3B82F6', '#2563EB',
-                '#F59E0B', '#F97316', '#EF4444'
-            ],
-            borderColor: [
-                '#059669', '#10B981', '#34D399',
-                '#3B82F6', '#2563EB', '#1D4ED8',
-                '#D97706', '#EA580C', '#DC2626'
-            ],
-            borderWidth: 1
-        }]
-    };
-}
-
-function addExportButtons() {
-    const exportSection = document.createElement('div');
-    exportSection.className = 'flex justify-end space-x-4 mb-6';
-    exportSection.innerHTML = `
-        <button onclick="exportToCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
-            Export to CSV
-        </button>
-        <button onclick="exportToPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200">
-            Export to PDF
-        </button>
-        <button onclick="printReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
-            Print Report
-        </button>
-    `;
-    
-    const mainContent = document.querySelector('.ml-64.flex-1');
-    if (mainContent) {
-        const firstChild = mainContent.firstChild;
-        mainContent.insertBefore(exportSection, firstChild);
+    // Grade Distribution Chart
+    const gradeCtx = document.getElementById('gradeChart');
+    if (gradeCtx) {
+        new Chart(gradeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: data.gradeLabels,
+                datasets: [{
+                    data: data.gradeCounts,
+                    backgroundColor: [
+                        '#10B981', // A
+                        '#34D399', // A-
+                        '#6EE7B7', // B+
+                        '#60A5FA', // B
+                        '#3B82F6', // B-
+                        '#2563EB', // C+
+                        '#F59E0B', // C
+                        '#F97316', // D
+                        '#EF4444'  // F
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { weight: '600', size: 11 }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
     }
 }
 
-function exportToCSV() {
-    showLoading();
-    
-    // Collect data from tables
-    const tables = document.querySelectorAll('table');
-    let csvContent = "data:text/csv;charset=utf-8,";
+function exportToExcel() {
+    // Basic CSV export for tables
+    const tables = document.querySelectorAll('table.table-modern');
+    let csv = [];
     
     tables.forEach((table, index) => {
-        const title = table.previousElementSibling?.querySelector('h3')?.textContent || `Table ${index + 1}`;
-        csvContent += title + "\r\n\r\n";
-        
         const rows = table.querySelectorAll('tr');
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('th, td');
-            const rowData = Array.from(cols).map(col => `"${col.textContent.trim()}"`).join(',');
-            csvContent += rowData + "\r\n";
-        });
-        
-        csvContent += "\r\n\r\n";
+        for (let i = 0; i < rows.length; i++) {
+            const row = [], cols = rows[i].querySelectorAll('td, th');
+            for (let j = 0; j < cols.length; j++) {
+                // Remove buttons or hidden elements if any
+                if (cols[j].querySelector('button')) continue;
+                row.push(cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").trim());
+            }
+            csv.push(row.join(","));
+        }
+        csv.push("\n"); // Space between tables
     });
-    
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "reports_" + new Date().toISOString().split('T')[0] + ".csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    hideLoading();
-    showNotification('CSV export completed successfully', 'success');
+
+    downloadCSV(csv.join("\n"), 'academic_report.csv');
+}
+
+function downloadCSV(csv, filename) {
+    const csvFile = new Blob([csv], { type: "text/csv" });
+    const downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
 }
 
 function exportToPDF() {
-    showLoading();
-
-    // Build a printable document from the main content area
-    const content = document.querySelector('.ml-64.flex-1');
-    if (!content) {
-        hideLoading();
-        showNotification('No report content found to export', 'error');
-        return;
-    }
-
-    // Clone content to avoid modifying the page
-    const clone = content.cloneNode(true);
-
-    // Use the dedicated print stylesheet so PDF resembles student transcript
-    const printCssUrl = window.location.origin + '/assets/css/print.css';
-    const win = window.open('', '_blank');
-    win.document.open();
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Report - ${new Date().toLocaleDateString()}</title><link rel="stylesheet" href="${printCssUrl}"></head><body>`);
-    win.document.write(clone.innerHTML);
-    win.document.write('</body></html>');
-    win.document.close();
-
-    // Wait a short moment for resources to load then trigger print
-    setTimeout(() => {
-        try {
-            win.print();
-            win.onafterprint = function () { win.close(); };
-            hideLoading();
-            showNotification('Opened printable report — use your browser Print/Save as PDF', 'success');
-        } catch (e) {
-            hideLoading();
-            showNotification('Failed to open print dialog: ' + e.message, 'error');
-        }
-    }, 700);
-}
-
-function printReport() {
+    // Uses the browser print function but optimized with @media print
     window.print();
 }
-
-// Add data attributes to grade distribution for charting
-document.addEventListener('DOMContentLoaded', function() {
-    const gradeItems = document.querySelectorAll('.space-y-4 > div');
-    gradeItems.forEach((item, index) => {
-        const gradeSpan = item.querySelector('span:first-child');
-        if (gradeSpan) {
-            const grade = gradeSpan.textContent.trim();
-            item.setAttribute('data-grade', grade);
-        }
-    });
-});

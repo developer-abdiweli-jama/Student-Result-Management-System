@@ -54,71 +54,107 @@ $gradeDistribution = $conn->query("
         END
 ");
 
-// Top performing students
-$topStudents = $conn->query("
-    SELECT s.reg_no, s.name, s.year_of_study,
-           AVG(r.grade_point) as avg_gpa,
-           COUNT(r.id) as subjects_count
-    FROM students s
-    JOIN results r ON s.id = r.student_id
-    GROUP BY s.id, s.reg_no, s.name, s.year_of_study
-    HAVING COUNT(r.id) >= 3
-    ORDER BY avg_gpa DESC
-    LIMIT 10
+// Yearly performance trends
+$yearlyPerformance = $conn->query("
+    SELECT academic_year, 
+           AVG(grade_point) as avg_gpa,
+           AVG(marks_obtained) as avg_marks
+    FROM results 
+    GROUP BY academic_year 
+    ORDER BY academic_year ASC
 ");
+$yearlyLabels = [];
+$yearlyGPA = [];
+while($row = $yearlyPerformance->fetch_assoc()) {
+    $yearlyLabels[] = $row['academic_year'];
+    $yearlyGPA[] = round($row['avg_gpa'], 2);
+}
+
+// Data for Grade Distribution Chart
+$gradeLabels = [];
+$gradeCounts = [];
+$gradeDistribution->data_seek(0);
+while($row = $gradeDistribution->fetch_assoc()) {
+    $gradeLabels[] = $row['grade'];
+    $gradeCounts[] = (int)$row['count'];
+}
 
 $page_title = "Reports & Analytics";
 $page_scripts = ['admin/reports.js'];
 include '../includes/header.php';
-include '../includes/admin_sidebar.php';
 ?>
+<?php include '../includes/admin_sidebar.php'; ?>
 
-<div class="ml-64 flex-1 p-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
-        <p class="text-gray-600">Comprehensive analysis of academic performance and statistics</p>
+<div class="lg:ml-64 flex-1 bg-slate-50 min-h-screen pb-12">
+    <!-- Glass Header -->
+    <div class="glass-header sticky top-0 z-20 mb-8">
+        <div class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Analytics & Reports</h1>
+                <nav class="flex items-center gap-2 mt-1 text-xs font-medium text-slate-500">
+                    <span>Admin</span>
+                    <i class="fas fa-chevron-right text-[10px]"></i>
+                    <span class="text-blue-600 font-bold">Academic Insights</span>
+                </nav>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex bg-slate-100 p-1 rounded-xl gap-1">
+                    <button onclick="exportToExcel()" class="px-4 py-2 bg-white text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm border border-slate-200">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button onclick="exportToPDF()" class="px-4 py-2 bg-white text-rose-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-rose-50 transition-all flex items-center gap-2 shadow-sm border border-slate-200">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+                <div class="h-8 w-[1px] bg-slate-200 mx-2"></div>
+                <div class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <i class="fas fa-calendar-alt text-blue-500"></i>
+                    <?php echo date('F Y'); ?>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                    </svg>
+    <div class="max-w-7xl mx-auto px-8">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Students -->
+            <div class="dashboard-card group hover:scale-[1.02] cursor-default">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-sm font-medium text-gray-500">Total Students</h3>
-                    <p class="text-2xl font-bold text-gray-900"><?php echo $totalStudents; ?></p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-sm font-medium text-gray-500">Results Published</h3>
-                    <p class="text-2xl font-bold text-gray-900"><?php echo $totalResults; ?></p>
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Total Enrollment</h3>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <p class="text-3xl font-black text-slate-900"><?php echo number_format($totalStudents); ?></p>
+                    <span class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">ACTIVE</span>
                 </div>
             </div>
-        </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
-                    </svg>
+            <!-- Results Published -->
+            <div class="dashboard-card group hover:scale-[1.02] cursor-default">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-inner border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-sm font-medium text-gray-500">Average GPA</h3>
-                    <p class="text-2xl font-bold text-gray-900">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Results Issued</h3>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <p class="text-3xl font-black text-slate-900"><?php echo number_format($totalResults); ?></p>
+                </div>
+            </div>
+
+            <!-- Average GPA -->
+            <div class="dashboard-card group hover:scale-[1.02] cursor-default">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Mean GPA Score</h3>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <p class="text-3xl font-black text-slate-900">
                         <?php 
                         $avgGPA = $conn->query("SELECT AVG(grade_point) as avg_gpa FROM results")->fetch_assoc()['avg_gpa'] ?? 0;
                         echo formatGPA($avgGPA);
@@ -126,18 +162,17 @@ include '../includes/admin_sidebar.php';
                     </p>
                 </div>
             </div>
-        </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-orange-100 text-orange-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+            <!-- Failure Rate -->
+            <div class="dashboard-card group hover:scale-[1.02] cursor-default">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shadow-inner border border-rose-100 group-hover:bg-rose-600 group-hover:text-white transition-all">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-sm font-medium text-gray-500">Failure Rate</h3>
-                    <p class="text-2xl font-bold text-gray-900">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">At Risk Students</h3>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <p class="text-3xl font-black text-slate-900">
                         <?php
                         $failRate = $conn->query("SELECT ROUND((SUM(CASE WHEN grade = 'F' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 2) as rate FROM results")->fetch_assoc()['rate'] ?? 0;
                         echo $failRate . '%';
@@ -146,93 +181,157 @@ include '../includes/admin_sidebar.php';
                 </div>
             </div>
         </div>
-    </div>
-    <div class="bg-white rounded-lg shadow-md mb-8">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">Term-wise Performance</h3>
+
+        <!-- Analytical Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="dashboard-card shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Yearly GPA Trends</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Academic Progress Over Time</p>
+                    </div>
+                    <div class="stats-icon-wrapper !w-10 !h-10 bg-blue-50 text-blue-600">
+                        <i class="fas fa-chart-line text-xs"></i>
+                    </div>
+                </div>
+                <div class="h-64 relative">
+                    <canvas id="yearlyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-card shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Grade Distribution</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Current Population Analysis</p>
+                    </div>
+                    <div class="stats-icon-wrapper !w-10 !h-10 bg-indigo-50 text-indigo-600">
+                        <i class="fas fa-chart-pie text-xs"></i>
+                    </div>
+                </div>
+                <div class="h-64 relative">
+                    <canvas id="gradeChart"></canvas>
+                </div>
+            </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Results</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average Marks</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average GPA</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <?php while($term = $termStats->fetch_assoc()): ?>
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            Term <?php echo $term['term']; ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <?php echo $term['total_results']; ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <?php echo formatGPA($term['avg_marks']); ?>%
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                <?php echo $term['avg_gpa'] >= 3.0 ? 'bg-green-100 text-green-800' : 
-                                       ($term['avg_gpa'] >= 2.0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'); ?>">
-                                <?php echo formatGPA($term['avg_gpa']); ?>
-                            </span>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+         <!-- Term Statistics -->
+         <div class="lg:col-span-1">
+             <div class="dashboard-card p-0 overflow-hidden h-full">
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Term Metrics</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="table-modern w-full">
+                        <thead class="bg-slate-50/30">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Term</th>
+                                <th class="px-6 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg GPA</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <?php 
+                            $termStats->data_seek(0);
+                            while($term = $termStats->fetch_assoc()): ?>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-slate-900">Term <?php echo $term['term']; ?></div>
+                                    <div class="text-[10px] font-bold text-slate-400"><?php echo $term['total_results']; ?> Entries</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black
+                                        <?php echo $term['avg_gpa'] >= 3.0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+                                               ($term['avg_gpa'] >= 2.0 ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-rose-50 text-rose-600 border border-rose-100'); ?>">
+                                        <?php echo formatGPA($term['avg_gpa']); ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+         </div>
+
+         <!-- Grade Distribution -->
+         <div class="lg:col-span-2">
+             <div class="dashboard-card p-0 overflow-hidden h-full">
+                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Grade Distribution</h3>
+                </div>
+                <div class="p-8">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                        <?php while($grade = $gradeDistribution->fetch_assoc()): ?>
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all cursor-default">
+                             <span class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black mb-2
+                                <?php echo in_array($grade['grade'], ['A', 'A-', 'B+']) ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+                                           ($grade['grade'] === 'F' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-blue-50 text-blue-600 border border-blue-100'); ?>">
+                                <?php echo $grade['grade']; ?>
+                             </span>
+                             <div class="text-xl font-black text-slate-900"><?php echo $grade['count']; ?></div>
+                             <div class="text-[10px] font-bold text-slate-400 uppercase mt-0.5"><?php echo $grade['percentage']; ?>%</div>
+                        </div>
+                        <?php endwhile; ?>
+                    </div>
+                </div>
+             </div>
+         </div>
     </div>
 
     <!-- Subject-wise Performance -->
-    <div class="bg-white rounded-lg shadow-md">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">Subject-wise Performance</h3>
+    <div class="dashboard-card p-0 overflow-hidden shadow-xl shadow-slate-200/50">
+        <div class="px-8 py-6 border-b border-slate-100 bg-white flex justify-between items-center">
+            <div>
+                <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Departmental Performance</h3>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Subject-level analysis across classes</p>
+            </div>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+            <table class="table-modern w-full">
+                <thead class="bg-slate-50 text-slate-400">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Marks</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg GPA</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Failures</th>
+                        <th class="px-8 py-4 text-left text-[10px] font-black uppercase tracking-widest">Subject</th>
+                        <th class="px-8 py-4 text-left text-[10px] font-black uppercase tracking-widest">Class</th>
+                        <th class="px-8 py-4 text-center text-[10px] font-black uppercase tracking-widest">Students</th>
+                        <th class="px-8 py-4 text-center text-[10px] font-black uppercase tracking-widest">Mean Marks</th>
+                        <th class="px-8 py-4 text-center text-[10px] font-black uppercase tracking-widest">Mean GPA</th>
+                        <th class="px-8 py-4 text-right text-[10px] font-black uppercase tracking-widest">Failures</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="divide-y divide-slate-50">
                     <?php while($subject = $subjectStats->fetch_assoc()): ?>
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900"><?php echo $subject['subject_name']; ?></div>
-                            <div class="text-sm text-gray-500"><?php echo $subject['subject_code']; ?></div>
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        <td class="px-8 py-5 whitespace-nowrap">
+                            <div class="text-sm font-bold text-slate-900"><?php echo $subject['subject_name']; ?></div>
+                            <div class="text-[10px] font-black text-slate-400 uppercase mt-0.5"><?php echo $subject['subject_code']; ?></div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <?php echo $subject['class_level']; ?>
+                        <td class="px-8 py-5 whitespace-nowrap">
+                            <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase">
+                                <?php echo $subject['class_level']; ?>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-8 py-5 whitespace-nowrap text-center text-sm font-bold text-slate-600">
                             <?php echo $subject['total_students']; ?>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-8 py-5 whitespace-nowrap text-center text-sm font-black text-slate-700">
                             <?php echo $subject['avg_marks'] ? formatGPA($subject['avg_marks']) . '%' : 'N/A'; ?>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-8 py-5 whitespace-nowrap text-center">
                             <?php if ($subject['avg_gpa']): ?>
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                <?php echo $subject['avg_gpa'] >= 3.0 ? 'bg-green-100 text-green-800' : 
-                                       ($subject['avg_gpa'] >= 2.0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'); ?>">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black
+                                <?php echo $subject['avg_gpa'] >= 3.0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
+                                       ($subject['avg_gpa'] >= 2.0 ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-rose-50 text-rose-600 border border-rose-100'); ?>">
                                 <?php echo formatGPA($subject['avg_gpa']); ?>
                             </span>
                             <?php else: ?>
-                            <span class="text-sm text-gray-500">N/A</span>
+                            <span class="text-[10px] font-black text-slate-300">N/A</span>
                             <?php endif; ?>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <?php echo $subject['failed_count']; ?>
+                        <td class="px-8 py-5 whitespace-nowrap text-right">
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-black
+                                <?php echo $subject['failed_count'] > 0 ? 'bg-rose-50 text-rose-600 border border-rose-100 animate-pulse' : 'bg-slate-50 text-slate-400 border border-slate-100'; ?>">
+                                <?php echo $subject['failed_count']; ?>
+                            </span>
                         </td>
                     </tr>
                     <?php endwhile; ?>
@@ -241,6 +340,16 @@ include '../includes/admin_sidebar.php';
         </div>
     </div>
 </div>
+
+<!-- Inject Data for JS -->
+<script>
+    window.chartData = {
+        yearlyLabels: <?php echo json_encode($yearlyLabels); ?>,
+        yearlyGPA: <?php echo json_encode($yearlyGPA); ?>,
+        gradeLabels: <?php echo json_encode($gradeLabels); ?>,
+        gradeCounts: <?php echo json_encode($gradeCounts); ?>
+    };
+</script>
 
 <?php include '../includes/footer.php'; ?>
 <?php
