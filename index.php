@@ -19,6 +19,18 @@ if (!file_exists('config/database.php')) {
 
 $siteName = getSetting('site_name', 'SRMIS');
 $siteLogo = getSetting('site_logo', null);
+
+// Dynamic Hero Content
+$heroTitle = getSetting('hero_title', 'Revolutionizing Student Success One Grade at a Time.');
+$heroSubtitle = getSetting('hero_subtitle', 'Empower your institution with a high-performance management system for tracking results, managing students, and delivering academic excellence.');
+
+// Dynamic Features
+$feature1Title = getSetting('feature_1_title', 'Dynamic Reporting');
+$feature1Desc = getSetting('feature_1_desc', 'Generate instantly readable result slips and progress reports for every student.');
+$feature2Title = getSetting('feature_2_title', 'Bulk Data Entry');
+$feature2Desc = getSetting('feature_2_desc', 'Save hours with our optimized bulk resulting tools for teachers and staff.');
+$feature3Title = getSetting('feature_3_title', 'Secure by Design');
+$feature3Desc = getSetting('feature_3_desc', 'Role-based access control and modern security practices protect your data.');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -81,10 +93,19 @@ $siteLogo = getSetting('site_logo', null);
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <span class="inline-block py-1 px-3 rounded-full bg-blue-50 text-blue-600 text-sm font-semibold mb-6">Version 2.0 Now Live</span>
             <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight lg:leading-[1.1] mb-6">
-                Revolutionizing <span class="text-blue-600">Student Success</span> One Grade at a Time.
+                <?php 
+                    $titleParts = explode(' ', $heroTitle);
+                    if (count($titleParts) > 2) {
+                        $lastWord = array_pop($titleParts);
+                        $secondLastWord = array_pop($titleParts);
+                        echo htmlspecialchars(implode(' ', $titleParts)) . ' <span class="text-blue-600">' . htmlspecialchars($secondLastWord . ' ' . $lastWord) . '</span>';
+                    } else {
+                        echo htmlspecialchars($heroTitle);
+                    }
+                ?>
             </h1>
             <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-                Empower your institution with a high-performance management system for tracking results, managing students, and delivering academic excellence.
+                <?php echo htmlspecialchars($heroSubtitle); ?>
             </p>
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
                 <a href="#portals" class="w-full sm:w-auto bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition transform hover:scale-105 shadow-xl shadow-blue-200">
@@ -166,8 +187,8 @@ $siteLogo = getSetting('site_logo', null);
                                 <i class="fas fa-check text-green-600"></i>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-gray-900">Dynamic Reporting</h4>
-                                <p class="text-gray-600">Generate instantly readable result slips and progress reports for every student.</p>
+                                <h4 class="text-lg font-bold text-gray-900"><?php echo htmlspecialchars($feature1Title); ?></h4>
+                                <p class="text-gray-600"><?php echo htmlspecialchars($feature1Desc); ?></p>
                             </div>
                         </div>
                         
@@ -176,8 +197,8 @@ $siteLogo = getSetting('site_logo', null);
                                 <i class="fas fa-bolt text-blue-600"></i>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-gray-900">Bulk Data Entry</h4>
-                                <p class="text-gray-600">Save hours with our optimized bulk resulting tools for teachers and staff.</p>
+                                <h4 class="text-lg font-bold text-gray-900"><?php echo htmlspecialchars($feature2Title); ?></h4>
+                                <p class="text-gray-600"><?php echo htmlspecialchars($feature2Desc); ?></p>
                             </div>
                         </div>
                         
@@ -186,8 +207,8 @@ $siteLogo = getSetting('site_logo', null);
                                 <i class="fas fa-shield-halved text-purple-600"></i>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-gray-900">Secure by Design</h4>
-                                <p class="text-gray-600">Role-based access control and modern security practices protect your data.</p>
+                                <h4 class="text-lg font-bold text-gray-900"><?php echo htmlspecialchars($feature3Title); ?></h4>
+                                <p class="text-gray-600"><?php echo htmlspecialchars($feature3Desc); ?></p>
                             </div>
                         </div>
                     </div>
