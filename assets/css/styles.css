@@ -208,8 +208,7 @@
 
 .form-input:focus {
     outline: none;
-    ring: 2px;
-    ring-color: #3b82f6;
+    box-shadow: 0 0 0 2px #3b82f6;
     border-color: #3b82f6;
 }
 
@@ -515,6 +514,7 @@
 .text-gradient-premium {
     background: var(--dash-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 

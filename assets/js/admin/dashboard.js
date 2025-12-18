@@ -20,46 +20,45 @@ document.addEventListener('DOMContentLoaded', function() {
                     data: data.gradeData || [],
                     backgroundColor: [
                         '#3B82F6', // blue
+                        '#6366F1', // indigo
+                        '#8B5CF6', // violet
                         '#10B981', // green
                         '#F59E0B', // amber
-                        '#EF4444', // red
-                        '#8B5CF6', // violet
-                        '#6366F1', // indigo
-                        '#EC4899', // pink
-                        '#F472B6', // rose
-                        '#2DD4BF', // teal
+                        '#F43F5E', // rose
                     ],
-                    borderWidth: 2,
-                    hoverOffset: 10
+                    borderWidth: 0,
+                    hoverOffset: 20,
+                    borderRadius: 10
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '80%',
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            padding: 20,
+                            usePointStyle: true,
+                            padding: 30,
                             font: {
-                                family: "'Inter', sans-serif",
-                                size: 12
-                            }
+                                family: "'Poppins', sans-serif",
+                                size: 11,
+                                weight: '700'
+                            },
+                            color: '#64748b'
                         }
                     },
                     tooltip: {
                         enabled: true,
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        titleColor: '#1F2937',
-                        bodyColor: '#1F2937',
-                        borderColor: '#E5E7EB',
-                        borderWidth: 1,
-                        padding: 12,
-                        displayColors: true,
-                        boxPadding: 6
+                        backgroundColor: '#0f172a',
+                        titleFont: { family: "'Poppins', sans-serif", size: 13, weight: '700' },
+                        bodyFont: { family: "'Poppins', sans-serif", size: 12 },
+                        padding: 16,
+                        cornerRadius: 12,
+                        displayColors: false
                     }
-                },
-                cutout: '70%'
+                }
             }
         });
     }
@@ -67,18 +66,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // 2. Student Enrollment Chart (Bar)
     const enrollmentCtx = document.getElementById('enrollmentChart');
     if (enrollmentCtx) {
+        const gradient = enrollmentCtx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 1)');
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 1)');
+
         new Chart(enrollmentCtx, {
             type: 'bar',
             data: {
                 labels: data.enrollmentLabels || [],
                 datasets: [{
-                    label: 'Students',
+                    label: 'Students Registered',
                     data: data.enrollmentData || [],
-                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                    borderColor: '#6366F1',
-                    borderWidth: 2,
-                    borderRadius: 8,
-                    maxBarThickness: 40
+                    backgroundColor: gradient,
+                    borderRadius: 12,
+                    borderSkipped: false,
+                    maxBarThickness: 32
                 }]
             },
             options: {
@@ -87,35 +89,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            font: {
-                                family: "'Inter', sans-serif"
-                            }
-                        },
                         grid: {
                             display: true,
-                            color: 'rgba(0, 0, 0, 0.05)'
+                            color: 'rgba(226, 232, 240, 0.5)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: "'Poppins', sans-serif", size: 11, weight: '600' },
+                            color: '#94a3b8'
                         }
                     },
                     x: {
-                        grid: {
-                            display: false
-                        },
+                        grid: { display: false },
                         ticks: {
-                            font: {
-                                family: "'Inter', sans-serif"
-                            }
+                            font: { family: "'Poppins', sans-serif", size: 11, weight: '600' },
+                            color: '#94a3b8'
                         }
                     }
                 },
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
-                        enabled: true,
-                        padding: 12
+                        backgroundColor: '#0f172a',
+                        padding: 16,
+                        cornerRadius: 12
                     }
                 }
             }

@@ -59,157 +59,189 @@ include '../includes/header.php';
 <?php include '../includes/admin_sidebar.php'; ?>
 
 <!-- Main Content -->
-<div class="lg:ml-64 flex-1 p-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-        <p class="text-gray-600">Welcome back, <?php echo $_SESSION['username']; ?></p>
-    </div>
-    
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Students -->
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 hover:shadow-lg transition-shadow duration-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Total Students</h3>
-                    <p class="text-2xl font-bold text-blue-600"><?php echo $totalStudents; ?></p>
-                </div>
+<div class="lg:ml-64 flex-1 bg-[#f8fafc] min-h-screen">
+    <!-- Admin Header -->
+    <div class="glass-header sticky top-0 z-20 mb-8">
+        <div class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
+                <p class="text-slate-500 font-medium flex items-center gap-2 mt-1">
+                    <span class="bg-blue-600 w-2 h-2 rounded-full animate-pulse"></span>
+                    Welcome back, <span class="text-slate-900 font-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                </p>
             </div>
-        </div>
-        
-        <!-- Teachers -->
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-indigo-500 hover:shadow-lg transition-shadow duration-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Total Teachers</h3>
-                    <p class="text-2xl font-bold text-indigo-600"><?php echo $totalTeachers; ?></p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Pending Requests -->
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500 hover:shadow-lg transition-shadow duration-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-orange-100 text-orange-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Pending Requests</h3>
-                    <p class="text-2xl font-bold text-orange-600"><?php echo $pendingRequests; ?></p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Published Results -->
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500 hover:shadow-lg transition-shadow duration-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Results</h3>
-                    <p class="text-2xl font-bold text-green-600"><?php echo $totalResults; ?></p>
+            
+            <div class="flex items-center gap-4">
+                <div class="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-xs"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest">System Operational</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Analytics Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
-            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <i class="fas fa-chart-pie mr-2 text-blue-500"></i> Grade Distribution
-            </h3>
-            <div class="h-64 flex items-center justify-center">
-                <canvas id="gradeChart"></canvas>
+    <div class="max-w-7xl mx-auto px-8">
+        <!-- Statistics Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            <!-- Total Students -->
+            <div class="dashboard-card group">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="stats-icon-wrapper bg-blue-50 text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-all duration-500">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                </div>
+                <h3 class="text-sm font-bold text-slate-500">Total Students</h3>
+                <p class="text-4xl font-black text-slate-900 mt-2"><?php echo $totalStudents; ?></p>
+            </div>
+
+            <!-- Total Teachers -->
+            <div class="dashboard-card group">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="stats-icon-wrapper bg-indigo-50 text-indigo-600 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-500">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                </div>
+                <h3 class="text-sm font-bold text-slate-500">Total Teachers</h3>
+                <p class="text-4xl font-black text-slate-900 mt-2"><?php echo $totalTeachers; ?></p>
+            </div>
+
+            <!-- Pending Requests -->
+            <div class="dashboard-card group">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="stats-icon-wrapper bg-orange-50 text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-all duration-500">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <?php if ($pendingRequests > 0): ?>
+                        <span class="px-2 py-1 bg-rose-500 text-white text-[10px] font-black rounded-lg animate-bounce">URGENT</span>
+                    <?php endif; ?>
+                </div>
+                <h3 class="text-sm font-bold text-slate-500">Pending Requests</h3>
+                <p class="text-4xl font-black text-slate-900 mt-2"><?php echo $pendingRequests; ?></p>
+            </div>
+
+            <!-- Total Results -->
+            <div class="dashboard-card group">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="stats-icon-wrapper bg-emerald-50 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                </div>
+                <h3 class="text-sm font-bold text-slate-500">Total Results</h3>
+                <p class="text-4xl font-black text-slate-900 mt-2"><?php echo $totalResults; ?></p>
             </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-500">
-            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <i class="fas fa-chart-bar mr-2 text-indigo-500"></i> Student Enrollment
-            </h3>
-            <div class="h-64 flex items-center justify-center">
-                <canvas id="enrollmentChart"></canvas>
+
+        <!-- Analytics & Trends -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+            <div class="dashboard-card">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 tracking-tight">Grade Distribution</h3>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Academic Performance Overview</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fas fa-chart-pie text-xs"></i>
+                    </div>
+                </div>
+                <div class="h-80 flex items-center justify-center relative">
+                    <canvas id="gradeChart"></canvas>
+                </div>
             </div>
-        </div>
-    </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Recent Students -->
-        <div class="bg-white rounded-lg shadow-md">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Recent Students</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reg No</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <?php while($student = $recentStudents->fetch_assoc()): ?>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600"><?php echo $student['reg_no']; ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo $student['name']; ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Year <?php echo $student['year_of_study']; ?></td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+
+            <div class="dashboard-card">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 tracking-tight">Student Enrollment</h3>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Institutional Growth Metrics</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <i class="fas fa-chart-bar text-xs"></i>
+                    </div>
+                </div>
+                <div class="h-80 flex items-center justify-center relative">
+                    <canvas id="enrollmentChart"></canvas>
+                </div>
             </div>
         </div>
         
-        <!-- Recent Results -->
-        <div class="bg-white rounded-lg shadow-md">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Recent Results</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 pb-12">
+            <!-- Recent Students -->
+            <div class="dashboard-card !p-0 overflow-hidden">
+                <div class="p-8 border-b border-slate-50 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 tracking-tight">Recent Students</h3>
+                        <p class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mt-1">New Registrations</p>
+                    </div>
+                    <a href="students.php" class="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-blue-600 transition-colors">View All</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Identity Identifier</th>
+                                <th>Academic Name</th>
+                                <th>Class Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while($student = $recentStudents->fetch_assoc()): ?>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="!py-4">
+                                    <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black tracking-widest">
+                                        <?php echo $student['reg_no']; ?>
+                                    </span>
+                                </td>
+                                <td class="!py-4 font-bold text-slate-900"><?php echo $student['name']; ?></td>
+                                <td class="!py-4">
+                                    <span class="text-xs font-bold text-slate-500 italic">Grade <?php echo $student['year_of_study']; ?></span>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <?php while($result = $recentResults->fetch_assoc()): ?>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900"><?php echo $result['name']; ?></div>
-                                <div class="text-sm text-gray-500"><?php echo $result['reg_no']; ?></div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo $result['subject_name']; ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo $result['marks_obtained']; ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    <?php echo $result['grade'] === 'F' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'; ?>">
-                                    <?php echo $result['grade']; ?>
-                                </span>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+            
+            <!-- Recent Results -->
+            <div class="dashboard-card !p-0 overflow-hidden">
+                <div class="p-8 border-b border-slate-50 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 tracking-tight">Recent Results</h3>
+                        <p class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mt-1">Latest Assessments</p>
+                    </div>
+                    <a href="results.php" class="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600 transition-colors">View Records</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Achievement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while($result = $recentResults->fetch_assoc()): ?>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="!py-4">
+                                    <div class="text-[11px] font-black text-slate-900 leading-none mb-1 uppercase tracking-tight"><?php echo $result['name']; ?></div>
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest"><?php echo $result['reg_no']; ?></div>
+                                </td>
+                                <td class="!py-4 font-bold text-slate-600 italic text-xs"><?php echo $result['subject_name']; ?></td>
+                                <td class="!py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-sm font-black text-slate-900"><?php echo $result['marks_obtained']; ?>%</div>
+                                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-black
+                                            <?php echo $result['grade'] === 'F' ? '!bg-rose-50 !text-rose-600' : '!bg-emerald-50 !text-emerald-600'; ?>">
+                                            <?php echo $result['grade']; ?>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

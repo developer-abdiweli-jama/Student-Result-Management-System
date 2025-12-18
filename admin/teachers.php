@@ -84,99 +84,143 @@ include __DIR__ . '/../includes/header.php';
 <?php include '../includes/admin_sidebar.php'; ?>
 
 <!-- Main Content -->
-<div class="lg:ml-64 flex-1 p-8 bg-gray-50 min-h-screen">
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">Teachers</h1>
-            <p class="text-gray-600">Manage your teaching staff</p>
+<div class="lg:ml-64 flex-1 bg-slate-50 min-h-screen pb-12">
+    <!-- Glass Header -->
+    <div class="glass-header sticky top-0 z-20 mb-8">
+        <div class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Teacher Management</h1>
+                <nav class="flex items-center gap-2 mt-1 text-xs font-medium text-slate-500">
+                    <span>Admin</span>
+                    <i class="fas fa-chevron-right text-[10px]"></i>
+                    <span class="text-blue-600 font-bold">Faculty</span>
+                </nav>
+            </div>
+            <button onclick="document.getElementById('addTeacherModal').classList.remove('hidden')" 
+                    class="premium-btn flex items-center gap-2 text-xs">
+                <i class="fas fa-plus"></i>
+                <span>Add Teacher</span>
+            </button>
         </div>
-        <button onclick="document.getElementById('addTeacherModal').classList.remove('hidden')" 
-                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center shadow-md transition duration-200">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Add Teacher
-        </button>
     </div>
 
-    <?php if ($message): ?>
-        <div class="mb-6 p-4 rounded-lg flex items-center <?php echo $messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-            <?php if ($messageType === 'success'): ?>
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            <?php else: ?>
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <?php endif; ?>
-            <?php echo htmlspecialchars($message); ?>
-        </div>
-    <?php endif; ?>
+    <div class="max-w-7xl mx-auto px-8">
+        <?php if ($message): ?>
+            <div class="mb-8 p-4 rounded-xl flex items-center gap-3 <?php echo $messageType === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'; ?> animate-fade-in-up">
+                <i class="fas <?php echo $messageType === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i>
+                <span class="font-bold text-sm"><?php echo htmlspecialchars($message); ?></span>
+            </div>
+        <?php endif; ?>
 
-    <!-- Teachers Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <?php while ($t = $teachers->fetch_assoc()): ?>
-            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition duration-200 overflow-hidden border border-gray-100">
-                <div class="p-6 text-center">
-                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-2xl font-bold">
-                        <?php echo strtoupper(substr($t['name'], 0, 1)); ?>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1"><?php echo htmlspecialchars($t['name']); ?></h3>
-                    <p class="text-sm text-gray-500 mb-4"><?php echo htmlspecialchars($t['reg_no']); ?></p>
-                    
-                    <div class="flex justify-center items-center space-x-2 mb-4">
-                        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                            <?php echo $t['subject_count']; ?> Subjects
+        <!-- Teachers Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <?php while ($t = $teachers->fetch_assoc()): ?>
+                <div class="dashboard-card group hover:-translate-y-1 transition-transform duration-300">
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-4 relative">
+                            <div class="absolute inset-0 bg-blue-600 rounded-2xl rotate-6 opacity-10 group-hover:rotate-12 transition-transform"></div>
+                            <div class="relative w-full h-full bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-2xl font-black text-blue-600">
+                                <?php echo strtoupper(substr($t['name'], 0, 1)); ?>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-black text-slate-900 mb-1"><?php echo htmlspecialchars($t['name']); ?></h3>
+                        <span class="inline-block px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-bold uppercase tracking-widest mb-4">
+                            <?php echo htmlspecialchars($t['reg_no']); ?>
                         </span>
-                    </div>
+                        
+                        <div class="grid grid-cols-1 gap-2 mb-6">
+                            <div class="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                                <span class="block text-2xl font-black text-slate-900"><?php echo $t['subject_count']; ?></span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Assigned Subjects</span>
+                            </div>
+                        </div>
 
-                    <div class="flex justify-center space-x-3 pt-4 border-t border-gray-100">
-                        <button onclick="toggleResetModal(<?php echo $t['id']; ?>)" class="text-yellow-600 hover:text-yellow-700 text-sm font-medium">Reset PW</button>
-                        <form method="post" onsubmit="return confirm('Are you sure you want to delete this teacher?');">
-                            <input type="hidden" name="action" value="delete" />
-                            <input type="hidden" name="id" value="<?php echo $t['id']; ?>" />
-                            <button type="submit" class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
-                        </form>
-                    </div>
-                    
-                    <!-- Reset PW Form (Hidden by default) -->
-                    <div id="reset-form-<?php echo $t['id']; ?>" class="hidden mt-4 pt-4 border-t border-gray-100">
-                         <form method="post" class="flex flex-col space-y-2">
-                             <input type="hidden" name="action" value="reset_password" />
-                             <input type="hidden" name="id" value="<?php echo $t['id']; ?>" />
-                             <input type="password" name="new_password" placeholder="New Password" class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500" required />
-                             <button type="submit" class="bg-yellow-500 text-white text-xs px-2 py-1 rounded hover:bg-yellow-600">Save Password</button>
-                         </form>
+                        <div class="flex items-center justify-center gap-2 pt-4 border-t border-slate-50">
+                            <button onclick="toggleResetModal(<?php echo $t['id']; ?>)" 
+                                    class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                                    title="Reset Password">
+                                <i class="fas fa-key text-xs"></i>
+                            </button>
+                            <form method="post" onsubmit="return confirm('Are you sure you want to delete this teacher? This will preserve their historical data linked to results but remove their access.');">
+                                <input type="hidden" name="action" value="delete" />
+                                <input type="hidden" name="id" value="<?php echo $t['id']; ?>" />
+                                <button type="submit" 
+                                        class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                                        title="Delete Account">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Reset PW Form (Hidden by default) -->
+                        <div id="reset-form-<?php echo $t['id']; ?>" class="hidden mt-4 pt-4 border-t border-slate-50 animate-fade-in-up">
+                             <form method="post" class="space-y-2">
+                                 <input type="hidden" name="action" value="reset_password" />
+                                 <input type="hidden" name="id" value="<?php echo $t['id']; ?>" />
+                                 <input type="password" name="new_password" placeholder="New Password" 
+                                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all placeholder:text-slate-400" required />
+                                 <button type="submit" class="w-full py-2 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-all shadow-sm">
+                                     Update Access
+                                 </button>
+                             </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        <?php endwhile; ?>
+            <?php endwhile; ?>
+        </div>
     </div>
 </div>
 
 <!-- Add Teacher Modal -->
-<div id="addTeacherModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Teacher</h3>
-            <form method="post">
-                <input type="hidden" name="action" value="create" />
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Registration No</label>
-                        <input name="reg_no" placeholder="e.g. TCH1001" class="w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500" required />
+<div id="addTeacherModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-[2rem] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100">
+            <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-blue-50 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-chalkboard-teacher text-blue-600"></i>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input name="name" placeholder="John Doe" class="w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500" required />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input name="password" type="password" placeholder="******" class="w-full border p-2 rounded focus:ring-blue-500 focus:border-blue-500" required />
+                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-lg font-black leading-6 text-slate-900" id="modal-title">New Faculty Member</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-slate-500 mb-6">Create a new teacher account. Registration number must follow the TCH format.</p>
+                            
+                            <form method="post" class="space-y-4">
+                                <input type="hidden" name="action" value="create" />
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 pl-1">Registration ID</label>
+                                    <input name="reg_no" placeholder="e.g. TCH1001" 
+                                           class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300" required />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 pl-1">Full Name</label>
+                                    <input name="name" placeholder="John Doe" 
+                                           class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300" required />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 pl-1">Initial Password</label>
+                                    <input name="password" type="password" placeholder="******" 
+                                           class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300" required />
+                                </div>
+                                
+                                <div class="mt-8 flex justify-end gap-3">
+                                    <button type="button" onclick="document.getElementById('addTeacherModal').classList.add('hidden')" 
+                                            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="premium-btn px-6 py-2 rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20">
+                                        Create Account
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-                <div class="items-center px-4 py-3 mt-4 text-right">
-                    <button type="button" onclick="document.getElementById('addTeacherModal').classList.add('hidden')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded mr-2 hover:bg-gray-300">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create Teacher</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

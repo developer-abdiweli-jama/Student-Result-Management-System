@@ -187,7 +187,7 @@ function handleBulkResults($conn) {
                 $grade_info = calculateGrade((float)$marks);
                 
                 $academic_year = getSetting('current_academic_year', '2024/2025');
-
+                
                 // Validate Student Admission Year
                 $yearValidation = validateStudentResultYear($student_id, $academic_year, $conn);
                 if ($yearValidation !== true) {
@@ -299,173 +299,221 @@ function handleListResults($conn) {
     // Get subjects for filter
     $subjects = $conn->query("SELECT id, subject_code, subject_name FROM subjects ORDER BY subject_code");
     
+    
     displayResultList($results, $search, $term_filter, $subject_filter, $class_filter, $subjects);
 }
 
 function displayResultForm($action, $result = null, $message = '', $students = null, $subjects = null) {
-    $page_title = $action === 'add' ? 'Add Result' : 'Edit Result';
-    $page_scripts = ['admin/results.js'];
     include '../includes/header.php';
     include '../includes/admin_sidebar.php';
     ?>
     
-    <div class="lg:ml-64 flex-1 p-8">
-        <div class="mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">
-                    <?php echo $action === 'add' ? 'Add New Result' : 'Edit Result'; ?>
-                </h1>
-                <p class="text-gray-600">
-                    <?php echo $action === 'add' ? 'Enter student examination results' : 'Update result information'; ?>
-                </p>
+    <div class="lg:ml-64 flex-1 bg-slate-50 min-h-screen pb-12">
+        <!-- Glass Header -->
+        <div class="glass-header sticky top-0 z-20 mb-8">
+            <div class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+                        <?php echo $action === 'add' ? 'Record Result' : 'Update Score'; ?>
+                    </h1>
+                    <nav class="flex items-center gap-2 mt-1 text-xs font-medium text-slate-500">
+                        <span>Admin</span>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                        <span>Academics</span>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                        <span class="text-blue-600 font-bold"><?php echo $action === 'add' ? 'New Entry' : 'Edit Result'; ?></span>
+                    </nav>
+                </div>
+                <a href="results.php" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-50 transition-colors shadow-sm">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Results
+                </a>
             </div>
-            <a href="results.php" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
-                Back to List
-            </a>
         </div>
         
-        <?php if ($message): ?>
-        <div class="mb-4 p-4 rounded-md <?php echo strpos($message, 'Error') !== false ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'; ?>">
-            <?php echo $message; ?>
-        </div>
-        <?php endif; ?>
-        
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <form method="POST" class="space-y-6" id="resultForm">
-                <?php if ($action === 'add'): ?>
-                <!-- Class Level Selector First -->
-                <div class="mb-4">
-                    <label for="class_level_filter" class="block text-sm font-medium text-gray-700">Class Level * (Select First)</label>
-                    <select id="class_level_filter" name="class_level_filter" required
-                            class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-blue-500 bg-blue-50 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select Class Level</option>
-                        <option value="Form 4">Form 4</option>
-                        <option value="Form 3">Form 3</option>
-                        <option value="Form 2">Form 2</option>
-                        <option value="Form 1">Form 1</option>
-                        <option value="Grade 8">Grade 8</option>
-                        <option value="Grade 7">Grade 7</option>
-                        <option value="Grade 6">Grade 6</option>
-                        <option value="Grade 5">Grade 5</option>
-                    </select>
+        <div class="max-w-4xl mx-auto px-8">
+            <?php if ($message): ?>
+            <div class="mb-8 p-4 rounded-xl flex items-center gap-3 <?php echo strpos($message, 'Error') !== false ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'; ?> animate-fade-in-up">
+                <i class="fas <?php echo strpos($message, 'Error') !== false ? 'fa-exclamation-circle' : 'fa-check-circle'; ?>"></i>
+                <span class="font-bold text-sm"><?php echo $message; ?></span>
+            </div>
+            <?php endif; ?>
+            
+            <div class="dashboard-card p-0 overflow-hidden">
+                <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-800">Exam Details</h3>
+                    <?php if ($action !== 'add'): ?>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold">ID: #<?php echo $result['id']; ?></span>
+                    <?php endif; ?>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="student_id" class="block text-sm font-medium text-gray-700">Student *</label>
-                        <select id="student_id" name="student_id" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select Class Level First</option>
-                            <?php while($student = $students->fetch_assoc()): ?>
-                            <option value="<?php echo $student['id']; ?>" <?php echo (isset($_GET['student_id']) && $_GET['student_id'] == $student['id']) ? 'selected' : ''; ?> data-class-level="<?php echo htmlspecialchars($student['class_level'] ?? ''); ?>">
-                                <?php echo $student['reg_no'] . ' - ' . $student['name'] . ' (' . htmlspecialchars($student['class_level'] ?? 'N/A') . ')'; ?>
-                            </option>
-                            <?php endwhile; ?>
-                        </select>
+
+                <form method="POST" class="p-8 space-y-8" id="resultForm">
+                    <?php if ($action === 'add'): ?>
+                    <!-- Class Level Selector First -->
+                    <div class="bg-blue-50/50 p-6 rounded-xl border border-blue-100 mb-8">
+                        <label for="class_level_filter" class="block text-xs font-black text-blue-600 uppercase tracking-widest mb-2 pl-1">Target Class Level</label>
+                        <div class="relative">
+                            <i class="fas fa-layer-group absolute left-4 top-1/2 -translate-y-1/2 text-blue-400"></i>
+                            <select id="class_level_filter" name="class_level_filter" required
+                                    class="w-full pl-11 pr-4 py-3 bg-white border-blue-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer hover:border-blue-400">
+                                <option value="">Select Level First...</option>
+                                <option value="Form 4">Form 4</option>
+                                <option value="Form 3">Form 3</option>
+                                <option value="Form 2">Form 2</option>
+                                <option value="Form 1">Form 1</option>
+                                <option value="Grade 8">Grade 8</option>
+                                <option value="Grade 7">Grade 7</option>
+                                <option value="Grade 6">Grade 6</option>
+                                <option value="Grade 5">Grade 5</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none"></i>
+                        </div>
+                        <p class="text-xs text-blue-500 mt-2 font-medium pl-1"><i class="fas fa-info-circle mr-1"></i> Selecting a class will filter students and subjects.</p>
                     </div>
                     
-                    <div>
-                        <label for="subject_id" class="block text-sm font-medium text-gray-700">Subject *</label>
-                        <select id="subject_id" name="subject_id" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select Class Level First</option>
-                            <?php while($subject = $subjects->fetch_assoc()): ?>
-                            <option value="<?php echo $subject['id']; ?>" data-class-level="<?php echo $subject['class_level']; ?>">
-                                <?php echo $subject['subject_code'] . ' - ' . $subject['subject_name'] . ' (' . $subject['class_level'] . ')'; ?>
-                            </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="term" class="block text-sm font-medium text-gray-700">Term *</label>
-                        <select id="term" name="term" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select Term</option>
-                            <?php for ($i = 1; $i <= 2; $i++): ?>
-                            <option value="<?php echo $i; ?>">Term <?php echo $i; ?></option>
-                            <?php endfor; ?>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label for="exam_date" class="block text-sm font-medium text-gray-700">Exam Date *</label>
-                        <input type="date" id="exam_date" name="exam_date" required
-                               value="<?php echo date('Y-m-d'); ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                </div>
-                <?php else: ?>
-                <div class="bg-gray-50 p-4 rounded-md space-y-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Student</label>
-                        <p class="text-lg font-semibold text-blue-600"><?php echo $result['reg_no'] . ' - ' . $result['student_name']; ?></p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Subject</label>
-                        <p class="text-lg text-gray-900"><?php echo $result['subject_code'] . ' - ' . $result['subject_name']; ?></p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Term</label>
-                            <p class="text-lg text-gray-900">Term <?php echo $result['term']; ?></p>
+                            <label for="student_id" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Student Selection</label>
+                            <div class="relative">
+                                <i class="fas fa-user-graduate absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <select id="student_id" name="student_id" required
+                                        class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none disabled:bg-slate-100 disabled:text-slate-400">
+                                    <option value="">Waiting for Class Level...</option>
+                                    <?php while($student = $students->fetch_assoc()): ?>
+                                    <option value="<?php echo $student['id']; ?>" <?php echo (isset($_GET['student_id']) && $_GET['student_id'] == $student['id']) ? 'selected' : ''; ?> data-class-level="<?php echo htmlspecialchars($student['class_level'] ?? ''); ?>">
+                                        <?php echo $student['reg_no'] . ' - ' . $student['name']; ?>
+                                    </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
                         </div>
+                        
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Current Grade</label>
-                            <p class="text-lg font-semibold <?php echo $result['grade'] === 'F' ? 'text-red-600' : 'text-green-600'; ?>">
-                                <?php echo $result['grade']; ?> (<?php echo $result['grade_point']; ?>)
-                            </p>
+                            <label for="subject_id" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Subject Selection</label>
+                            <div class="relative">
+                                <i class="fas fa-book absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <select id="subject_id" name="subject_id" required
+                                        class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none disabled:bg-slate-100 disabled:text-slate-400">
+                                    <option value="">Waiting for Class Level...</option>
+                                    <?php while($subject = $subjects->fetch_assoc()): ?>
+                                    <option value="<?php echo $subject['id']; ?>" data-class-level="<?php echo $subject['class_level']; ?>">
+                                        <?php echo $subject['subject_code'] . ' - ' . $subject['subject_name']; ?>
+                                    </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="marks_obtained" class="block text-sm font-medium text-gray-700">Marks Obtained *</label>
-                        <input type="number" id="marks_obtained" name="marks_obtained" min="0" max="100" step="0.01" required
-                               value="<?php echo $result['marks_obtained'] ?? ''; ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="Enter marks (0-100)">
-                        <p class="mt-1 text-sm text-gray-500">Marks must be between 0 and 100</p>
                     </div>
                     
-                    <div class="bg-blue-50 p-4 rounded-md">
-                        <label class="block text-sm font-medium text-gray-700">Grade Preview</label>
-                        <div id="gradePreview" class="mt-2">
-                            <span class="text-lg font-semibold text-gray-600">Enter marks to see grade</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="term" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Term</label>
+                            <div class="relative">
+                                <i class="fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <select id="term" name="term" required
+                                        class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all appearance-none">
+                                    <option value="">Select Term</option>
+                                    <?php for ($i = 1; $i <= 2; $i++): ?>
+                                    <option value="<?php echo $i; ?>">Term <?php echo $i; ?></option>
+                                    <?php endfor; ?>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="exam_date" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Exam Date</label>
+                            <div class="relative">
+                                <i class="fas fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="date" id="exam_date" name="exam_date" required
+                                       value="<?php echo date('Y-m-d'); ?>"
+                                       class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3">
-                    <a href="results.php" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md transition duration-200">
-                        Cancel
-                    </a>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-200">
-                        <?php echo $action === 'add' ? 'Add Result' : 'Update Result'; ?>
-                    </button>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Grade Scale Reference -->
-        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Grade Scale Reference</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                <?php foreach (GRADE_SCALE as $grade => $range): ?>
-                <div class="text-center p-3 rounded-lg <?php echo $grade === 'F' ? 'bg-red-100' : 'bg-green-100'; ?>">
-                    <div class="font-semibold <?php echo $grade === 'F' ? 'text-red-800' : 'text-green-800'; ?>"><?php echo $grade; ?></div>
-                    <div class="text-sm <?php echo $grade === 'F' ? 'text-red-600' : 'text-green-600'; ?>">
-                        <?php echo $range['min']; ?>-<?php echo $range['max']; ?>%
+                    <?php else: ?>
+                    <!-- Edit Mode Read-Only Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Student</label>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
+                                    <?php echo substr($result['student_name'], 0, 1); ?>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-bold text-slate-900 leading-tight"><?php echo $result['student_name']; ?></p>
+                                    <p class="text-xs font-medium text-slate-500"><?php echo $result['reg_no']; ?></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Subject</label>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-bold text-slate-900 leading-tight"><?php echo $result['subject_name']; ?></p>
+                                    <p class="text-xs font-medium text-slate-500"><?php echo $result['subject_code']; ?> &bull; Term <?php echo $result['term']; ?></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-xs <?php echo $grade === 'F' ? 'text-red-600' : 'text-green-600'; ?>">
-                        GP: <?php echo $range['point']; ?>
+                    <?php endif; ?>
+                    
+                    <div class="border-t border-slate-100 pt-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                <label for="marks_obtained" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Score Obtained</label>
+                                <div class="relative">
+                                    <input type="number" id="marks_obtained" name="marks_obtained" min="0" max="100" step="0.01" required
+                                           value="<?php echo $result['marks_obtained'] ?? ''; ?>"
+                                           class="w-full text-4xl font-black text-center py-4 bg-white border-2 border-slate-200 rounded-2xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-slate-200"
+                                           placeholder="00">
+                                    <span class="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">/ 100</span>
+                                </div>
+                                <p class="text-xs text-center text-slate-400 mt-2 font-medium">Enter value between 0 and 100</p>
+                            </div>
+                            
+                            <div class="flex flex-col justify-center h-full">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Grade Preview</label>
+                                <div id="gradePreview" class="flex-1 bg-slate-900 text-white rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden group">
+                                     <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                     <div class="text-center relative z-10">
+                                         <span class="text-5xl font-black tracking-tighter" id="previewGrade">--</span>
+                                         <span class="block text-slate-400 text-sm font-bold mt-1" id="previewPoint">GP: --</span>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <div class="flex justify-end gap-3 pt-4">
+                        <a href="results.php" class="px-6 py-3 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-colors">
+                            Cancel
+                        </a>
+                        <button type="submit" class="premium-btn px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20">
+                            <i class="fas fa-check-circle mr-2"></i> <?php echo $action === 'add' ? 'Save Result' : 'Update Changes'; ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Grade Scale Reference -->
+            <div class="mt-8">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 pl-1">Marking Scheme Reference</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <?php foreach (GRADE_SCALE as $grade => $range): ?>
+                    <div class="dashboard-card p-4 text-center hover:-translate-y-1 transition-transform cursor-default <?php echo $grade === 'F' ? 'border-l-4 border-l-rose-500' : 'border-l-4 border-l-emerald-500'; ?>">
+                        <div class="text-2xl font-black <?php echo $grade === 'F' ? 'text-rose-600' : 'text-slate-800'; ?>"><?php echo $grade; ?></div>
+                        <div class="text-xs font-bold text-slate-400 mt-1">
+                            <?php echo $range['min']; ?> - <?php echo $range['max']; ?>%
+                        </div>
+                        <div class="text-[10px] font-bold text-slate-300 mt-1 uppercase tracking-wider">
+                            Points: <?php echo $range['point']; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
-                <?php endforeach; ?>
             </div>
         </div>
     </div>
@@ -474,134 +522,168 @@ function displayResultForm($action, $result = null, $message = '', $students = n
 }
 
 function displayBulkResultForm($message = '', $students = null, $subjects = null) {
-    $page_title = "Bulk Results Upload";
-    $page_scripts = ['admin/results.js'];
     include '../includes/header.php';
     include '../includes/admin_sidebar.php';
     $conn = getDBConnection();
     $teachers_for_select = $conn->query("SELECT id, reg_no, name FROM teachers ORDER BY name");
     ?>
     
-    <div class="lg:ml-64 flex-1 p-8">
-        <div class="mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Bulk Results Upload</h1>
-                <p class="text-gray-600">Upload results for multiple students at once</p>
+    <div class="lg:ml-64 flex-1 bg-slate-50 min-h-screen pb-12">
+        <div class="glass-header sticky top-0 z-20 mb-8">
+            <div class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">Bulk Results Upload</h1>
+                        <nav class="flex items-center gap-2 mt-1 text-xs font-medium text-slate-500">
+                        <span>Admin</span>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                        <span>Academics</span>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                        <span class="text-blue-600 font-bold">Bulk Entry</span>
+                    </nav>
+                </div>
+                <a href="results.php" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-50 transition-colors shadow-sm">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Results
+                </a>
             </div>
-            <a href="results.php" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
-                Back to List
-            </a>
         </div>
         
-        <?php if ($message): ?>
-        <div class="mb-4 p-4 rounded-md <?php echo strpos($message, 'Error') !== false ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'; ?>">
-            <?php echo $message; ?>
-        </div>
-        <?php endif; ?>
-        
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <form method="POST" class="space-y-6" id="bulkResultForm">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Class Level Selector -->
-                    <div>
-                        <label for="bulk_class_level" class="block text-sm font-medium text-gray-700">Class Level *</label>
-                        <select id="bulk_class_level" name="bulk_class_level" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select Class Level</option>
-                            <option value="Form 4">Form 4</option>
-                            <option value="Form 3">Form 3</option>
-                            <option value="Form 2">Form 2</option>
-                            <option value="Form 1">Form 1</option>
-                            <option value="Grade 8">Grade 8</option>
-                            <option value="Grade 7">Grade 7</option>
-                            <option value="Grade 6">Grade 6</option>
-                            <option value="Grade 5">Grade 5</option>
-                        </select>
+        <div class="max-w-7xl mx-auto px-8">
+            <?php if ($message): ?>
+            <div class="mb-8 p-4 rounded-xl flex items-center gap-3 <?php echo strpos($message, 'Error') !== false ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'; ?> animate-fade-in-up">
+                <i class="fas <?php echo strpos($message, 'Error') !== false ? 'fa-exclamation-circle' : 'fa-check-circle'; ?>"></i>
+                <span class="font-bold text-sm"><?php echo $message; ?></span>
+            </div>
+            <?php endif; ?>
+            
+            <form method="POST" id="bulkResultForm">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Control Panel -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="dashboard-card sticky top-32">
+                            <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <i class="fas fa-sliders-h text-blue-500"></i> Configuration
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="bulk_class_level" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">1. Class Level</label>
+                                    <select id="bulk_class_level" name="bulk_class_level" required
+                                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                                        <option value="">Select Level...</option>
+                                        <option value="Form 4">Form 4</option>
+                                        <option value="Form 3">Form 3</option>
+                                        <option value="Form 2">Form 2</option>
+                                        <option value="Form 1">Form 1</option>
+                                        <option value="Grade 8">Grade 8</option>
+                                        <option value="Grade 7">Grade 7</option>
+                                        <option value="Grade 6">Grade 6</option>
+                                        <option value="Grade 5">Grade 5</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="bulk_subject_id" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">2. Subject</label>
+                                    <select id="bulk_subject_id" name="bulk_subject_id" required
+                                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all disabled:bg-slate-100 disabled:text-slate-400">
+                                        <option value="">Select Class First...</option>
+                                        <?php while($subject = $subjects->fetch_assoc()): ?>
+                                        <option value="<?php echo $subject['id']; ?>"
+                                                data-class-level="<?php echo htmlspecialchars($subject['class_level']); ?>">
+                                            <?php echo $subject['subject_code'] . ' - ' . $subject['subject_name']; ?>
+                                        </option>
+                                        <?php endwhile; ?>
+                                    </select>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="term" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">3. Term</label>
+                                        <select id="term" name="term" required
+                                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                                            <option value="">Term...</option>
+                                            <option value="1">Term 1</option>
+                                            <option value="2">Term 2</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="exam_date" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">4. Date</label>
+                                        <input type="date" id="exam_date" name="exam_date" required
+                                               value="<?php echo date('Y-m-d'); ?>"
+                                               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-4 border-t border-slate-100">
+                                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Attributed Teacher (Optional)</label>
+                                     <select name="attributed_teacher" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                                        <option value="">-- No specific teacher --</option>
+                                        <?php while ($th = $teachers_for_select->fetch_assoc()): ?>
+                                            <option value="<?php echo $th['id']; ?>"><?php echo htmlspecialchars($th['reg_no'] . ' - ' . $th['name']); ?></option>
+                                        <?php endwhile; ?>
+                                    </select>
+                                </div>
+
+                                <div class="pt-6">
+                                    <button type="submit" class="premium-btn w-full py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
+                                        <i class="fas fa-cloud-upload-alt"></i> Upload Results
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div>
-                        <label for="bulk_subject_id" class="block text-sm font-medium text-gray-700">Subject *</label>
-                        <select id="bulk_subject_id" name="bulk_subject_id" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select Class First</option>
-                            <?php while($subject = $subjects->fetch_assoc()): ?>
-                            <option value="<?php echo $subject['id']; ?>"
-                                    data-class-level="<?php echo htmlspecialchars($subject['class_level']); ?>">
-                                <?php echo $subject['subject_code'] . ' - ' . $subject['subject_name'] . ' (' . $subject['class_level'] . ')'; ?>
-                            </option>
-                            <?php endwhile; ?>
-                        </select>
+
+                    <!-- Students List -->
+                    <div class="lg:col-span-2">
+                        <div class="dashboard-card p-0 overflow-hidden min-h-[500px]">
+                            <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
+                                <h3 class="font-bold text-slate-800">Student Entry List</h3>
+                                <span class="text-xs font-medium text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">
+                                    <i class="fas fa-info-circle text-blue-500 mr-1"></i> Showing students for selected class
+                                </span>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-slate-50 border-b border-slate-100">
+                                        <tr>
+                                            <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Student Info</th>
+                                            <th class="px-6 py-4 text-center text-xs font-black text-slate-400 uppercase tracking-wider w-40">Score (0-100)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-50">
+                                        <?php while($student = $students->fetch_assoc()): ?>
+                                        <tr data-class-level="<?php echo htmlspecialchars($student['class_level'] ?? ''); ?>" class="hover:bg-slate-50/50 transition-colors hidden">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs ring-2 ring-white">
+                                                        <?php echo substr($student['name'], 0, 1); ?>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-sm font-bold text-slate-900"><?php echo $student['name']; ?></div>
+                                                        <div class="text-xs font-medium text-slate-500"><?php echo $student['reg_no']; ?></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 bg-slate-50/30">
+                                                <input type="number" 
+                                                       name="results[<?php echo $student['id']; ?>]" 
+                                                       min="0" max="100" step="0.01"
+                                                       class="w-full text-center px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300"
+                                                       placeholder="-">
+                                            </td>
+                                        </tr>
+                                        <?php endwhile; ?>
+                                        <tr id="no-students-placeholder">
+                                            <td colspan="2" class="px-6 py-12 text-center text-slate-400">
+                                                <i class="fas fa-users text-4xl mb-3 opacity-20"></i>
+                                                <p class="font-medium">Select a Class Level to load students</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div>
-                        <label for="term" class="block text-sm font-medium text-gray-700">Term *</label>
-                        <select id="term" name="term" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select Term</option>
-                            <?php for ($i = 1; $i <= 2; $i++): ?>
-                            <option value="<?php echo $i; ?>">Term <?php echo $i; ?></option>
-                            <?php endfor; ?>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label for="exam_date" class="block text-sm font-medium text-gray-700">Exam Date *</label>
-                        <input type="date" id="exam_date" name="exam_date" required
-                               value="<?php echo date('Y-m-d'); ?>"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                </div>
-                
-                <div class="border-t border-gray-200 pt-6">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Attributed to Teacher (optional)</label>
-                        <select name="attributed_teacher" class="mt-1 block w-1/2 px-3 py-2 border border-gray-300 rounded-md">
-                            <option value="">-- None --</option>
-                            <?php while ($th = $teachers_for_select->fetch_assoc()): ?>
-                                <option value="<?php echo $th['id']; ?>"><?php echo htmlspecialchars($th['reg_no'] . ' - ' . $th['name']); ?></option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Student Marks</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reg No</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks (0-100)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <?php while($student = $students->fetch_assoc()): ?>
-                                <tr data-class-level="<?php echo htmlspecialchars($student['class_level'] ?? ''); ?>">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        <?php echo $student['reg_no']; ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <?php echo $student['name'] . ' (' . htmlspecialchars($student['class_level'] ?? 'N/A') . ')'; ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="number" 
-                                               name="results[<?php echo $student['id']; ?>]" 
-                                               min="0" max="100" step="0.01"
-                                               class="w-24 px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                               placeholder="Marks">
-                                    </td>
-                                </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3">
-                    <a href="results.php" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md transition duration-200">
-                        Cancel
-                    </a>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-200">
-                        Upload Results
-                    </button>
                 </div>
             </form>
         </div>
@@ -611,140 +693,182 @@ function displayBulkResultForm($message = '', $students = null, $subjects = null
 }
 
 function displayResultList($results, $search = '', $term_filter = '', $subject_filter = '', $class_filter = '', $subjects = null) {
-    $page_title = "Manage Results";
-    $page_scripts = ['admin/results.js'];
     include '../includes/header.php';
     include '../includes/admin_sidebar.php';
     ?>
     
-    <div class="lg:ml-64 flex-1 p-8">
-        <div class="mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Results Management</h1>
-                <p class="text-gray-600">Manage student examination results</p>
-            </div>
-            <div class="flex space-x-3">
-                <a href="results.php?action=bulk" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
-                    Bulk Upload
-                </a>
-                <a href="results.php?action=add" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
-                    Add New Result
-                </a>
+    <div class="lg:ml-64 flex-1 bg-slate-50 min-h-screen pb-12">
+        <!-- Glass Header -->
+        <div class="glass-header sticky top-0 z-20 mb-8">
+            <div class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">Results Archive</h1>
+                    <nav class="flex items-center gap-2 mt-1 text-xs font-medium text-slate-500">
+                        <span>Admin</span>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                        <span class="text-blue-600 font-bold">Results</span>
+                    </nav>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="results.php?action=bulk" class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-sm hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
+                        <i class="fas fa-file-upload text-slate-400"></i> Bulk Upload
+                    </a>
+                    <a href="results.php?action=add" class="premium-btn px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 flex items-center gap-2">
+                        <i class="fas fa-plus"></i> New Entry
+                    </a>
+                </div>
             </div>
         </div>
-        
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <input type="hidden" name="action" value="list">
-                
-                <div>
-                    <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
-                    <input type="text" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>"
-                           placeholder="Search by student name or reg no..."
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                
-                <div>
-                    <label for="term" class="block text-sm font-medium text-gray-700">Term</label>
-                    <select id="term" name="term" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Terms</option>
-                        <?php for ($i = 1; $i <= 2; $i++): ?>
-                        <option value="<?php echo $i; ?>" <?php echo $term_filter == $i ? 'selected' : ''; ?>>Term <?php echo $i; ?></option>
-                        <?php endfor; ?>
-                    </select>
-                </div>
-                
-                <div>
-                    <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
-                    <select id="subject" name="subject" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Subjects</option>
-                        <?php while($subject = $subjects->fetch_assoc()): ?>
-                        <option value="<?php echo $subject['id']; ?>" <?php echo $subject_filter == $subject['id'] ? 'selected' : ''; ?>>
-                            <?php echo $subject['subject_code']; ?>
-                        </option>
-                        <?php endwhile; ?>
-                    </select>
-                </div>
-                
-                <div>
-                    <label for="class_level" class="block text-sm font-medium text-gray-700">Class Level</label>
-                    <select id="class_level" name="class_level" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Classes</option>
-                        <?php 
-                        $classes = ['Form 4', 'Form 3', 'Form 2', 'Form 1', 'Grade 8', 'Grade 7', 'Grade 6', 'Grade 5'];
-                        foreach ($classes as $c): ?>
-                            <option value="<?php echo $c; ?>" <?php echo $class_filter == $c ? 'selected' : ''; ?>><?php echo $c; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                
-                <div class="flex items-end">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-200 w-full">
-                        Apply Filters
-                    </button>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Results Table -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entered By</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <?php while($result = $results->fetch_assoc()): ?>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900"><?php echo $result['student_name']; ?></div>
-                                <div class="text-sm text-gray-500"><?php echo $result['reg_no']; ?></div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900"><?php echo $result['subject_name']; ?></div>
-                                <div class="text-sm text-gray-500"><?php echo $result['subject_code']; ?></div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                Term <?php echo $result['term']; ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                <?php echo $result['marks_obtained']; ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    <?php echo $result['grade'] === 'F' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'; ?>">
-                                    <?php echo $result['grade']; ?> (<?php echo $result['grade_point']; ?>)
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?php echo date('M j, Y', strtotime($result['exam_date'])); ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?php echo !empty($result['entered_by_teacher_name']) ? htmlspecialchars($result['entered_by_teacher_name']) : 'Admin'; ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex space-x-2">
-                                    <a href="results.php?action=edit&id=<?php echo $result['id']; ?>" 
-                                       class="text-blue-600 hover:text-blue-900 transition duration-200">Edit</a>
-                                    <a href="results.php?action=delete&id=<?php echo $result['id']; ?>" 
-                                       class="text-red-600 hover:text-red-900 transition duration-200"
-                                       onclick="return confirm('Are you sure you want to delete this result? This action cannot be undone.')">Delete</a>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+
+        <div class="max-w-7xl mx-auto px-8">
+            <!-- Search & Filter Card -->
+            <div class="dashboard-card mb-8">
+                <form method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                    <input type="hidden" name="action" value="list">
+                    
+                    <div class="md:col-span-4">
+                        <label for="search" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Search Records</label>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>"
+                                   placeholder="Student name, Reg No..."
+                                   class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label for="class_level" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Class</label>
+                        <select id="class_level" name="class_level" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                            <option value="">All Classes</option>
+                            <?php 
+                            $classes = ['Form 4', 'Form 3', 'Form 2', 'Form 1', 'Grade 8', 'Grade 7', 'Grade 6', 'Grade 5'];
+                            foreach ($classes as $c): ?>
+                                <option value="<?php echo $c; ?>" <?php echo $class_filter == $c ? 'selected' : ''; ?>><?php echo $c; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label for="subject" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Subject</label>
+                        <select id="subject" name="subject" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                            <option value="">All Subjects</option>
+                            <?php while($subject = $subjects->fetch_assoc()): ?>
+                            <option value="<?php echo $subject['id']; ?>" <?php echo $subject_filter == $subject['id'] ? 'selected' : ''; ?>>
+                                <?php echo $subject['subject_code']; ?>
+                            </option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label for="term" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Term</label>
+                        <select id="term" name="term" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                            <option value="">All Terms</option>
+                            <?php for ($i = 1; $i <= 2; $i++): ?>
+                            <option value="<?php echo $i; ?>" <?php echo $term_filter == $i ? 'selected' : ''; ?>>Term <?php echo $i; ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-1">
+                        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors shadow-sm flex items-center justify-center">
+                            <i class="fas fa-filter text-lg"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
+            
+            <!-- Results Table -->
+            <div class="dashboard-card p-0 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="table-modern w-full">
+                        <thead class="bg-slate-50 border-b border-slate-100">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Student</th>
+                                <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Subject & Term</th>
+                                <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Score</th>
+                                <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Grade</th>
+                                <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Exam Date</th>
+                                <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Input By</th>
+                                <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <?php while($result = $results->fetch_assoc()): ?>
+                            <tr class="hover:bg-slate-50/50 transition-colors group">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-sm">
+                                            <?php echo substr($result['student_name'], 0, 1); ?>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-bold text-slate-900"><?php echo $result['student_name']; ?></div>
+                                            <div class="text-xs font-medium text-slate-400"><?php echo $result['reg_no']; ?></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-slate-900"><?php echo $result['subject_name']; ?></div>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">
+                                        Term <?php echo $result['term']; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-black text-slate-700">
+                                    <?php echo $result['marks_obtained']; ?><span class="text-slate-400 font-medium text-xs">/100</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-black
+                                        <?php echo $result['grade'] === 'F' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'; ?>">
+                                        <?php echo $result['grade']; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-slate-500">
+                                    <?php echo date('M j, Y', strtotime($result['exam_date'])); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <?php if (!empty($result['entered_by_teacher_name'])): ?>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-2 h-2 rounded-full bg-indigo-400"></div>
+                                            <span class="text-xs font-medium text-slate-600"><?php echo htmlspecialchars($result['entered_by_teacher_name']); ?></span>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                                            <span class="text-xs font-medium text-slate-600">Admin</span>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <a href="results.php?action=edit&id=<?php echo $result['id']; ?>" 
+                                           class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                           title="Edit Result">
+                                            <i class="fas fa-edit text-xs"></i>
+                                        </a>
+                                        <a href="results.php?action=delete&id=<?php echo $result['id']; ?>" 
+                                           class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm"
+                                           onclick="return confirm('Are you sure you want to delete this result? This action cannot be undone.')"
+                                           title="Delete Result">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <?php if ($results->num_rows == 0): ?>
+            <div class="text-center py-12">
+                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                    <i class="fas fa-clipboard-list text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-700">No results found</h3>
+                <p class="text-slate-500 text-sm mt-1">Try adjusting your filters or search terms.</p>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
     
