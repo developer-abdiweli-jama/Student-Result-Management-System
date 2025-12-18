@@ -30,6 +30,24 @@ $recentResults = $conn->query("
     LIMIT 5
 ");
 
+// Analytics: Grade distribution
+$gradeDistRes = $conn->query("SELECT grade, COUNT(*) as count FROM results GROUP BY grade ORDER BY grade");
+$gradeLabels = [];
+$gradeData = [];
+while($row = $gradeDistRes->fetch_assoc()) {
+    $gradeLabels[] = $row['grade'];
+    $gradeData[] = (int)$row['count'];
+}
+
+// Analytics: Student enrollment by year
+$enrollmentRes = $conn->query("SELECT year_of_study, COUNT(*) as count FROM students GROUP BY year_of_study ORDER BY year_of_study");
+$enrollmentLabels = [];
+$enrollmentData = [];
+while($row = $enrollmentRes->fetch_assoc()) {
+    $enrollmentLabels[] = "Year " . $row['year_of_study'];
+    $enrollmentData[] = (int)$row['count'];
+}
+
 $conn->close();
 
 $page_title = "Admin Dashboard";
@@ -109,6 +127,26 @@ include '../includes/header.php';
             </div>
         </div>
     </div>
+
+    <!-- Analytics Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-chart-pie mr-2 text-blue-500"></i> Grade Distribution
+            </h3>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="gradeChart"></canvas>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-500">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-chart-bar mr-2 text-indigo-500"></i> Student Enrollment
+            </h3>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="enrollmentChart"></canvas>
+            </div>
+        </div>
+    </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Recent Students -->
@@ -176,5 +214,15 @@ include '../includes/header.php';
         </div>
     </div>
 </div>
+
+<!-- Inject Data for JS -->
+<script>
+    window.chartData = {
+        gradeLabels: <?php echo json_encode($gradeLabels); ?>,
+        gradeData: <?php echo json_encode($gradeData); ?>,
+        enrollmentLabels: <?php echo json_encode($enrollmentLabels); ?>,
+        enrollmentData: <?php echo json_encode($enrollmentData); ?>
+    };
+</script>
 
 <?php include '../includes/footer.php'; ?>
